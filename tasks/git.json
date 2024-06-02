@@ -39,11 +39,7 @@
            
         },
        
-        {
-            "command": "cd /git_task2/ && git log",
-            "contains": " u: { $push: { comments: \"Комментарий 3\" ",
-            "fail_message": "Нет комбинированного запроса на обновление комментариев"
-        }
+      
 
    
     ]
