@@ -1,0 +1,60 @@
+{
+	"title":"Docker",
+	"virtual_machines":
+	[
+	{
+	"cores": 2,
+	"memory": 2,
+	"image": "fd88v6jeil9qgbpqb170"
+	}
+    ],
+
+	"checks":
+	[
+	{
+	"vm_index":0,
+  
+   "ssh_checker":
+    {
+    "check":
+    [
+	 {
+        "command": "bash -c \"sudo usermod -aG docker $USER\" && bash -c \"docker images\" > docker"
+    },
+    {
+        "command": "cat docker",
+		"contains": "webapp",
+		"fail_message": "Не собран образ"
+    },
+	
+	 {
+        "command": "bash -c \"docker exec -it mariadb -D docker_db -u docker_db_user -pdocker_db_password -e 'select * from wp-admin'\" > docker"
+    },
+	
+    {
+        "command": "bash -c \"docker network ls\" >> docker && cat docker",
+		"contains": "net1",
+		"fail_message": "Не создана сеть net1"
+		
+    },
+	{
+		"command": "bash -c \"docker volume ls\" >> docker && cat docker ",
+		"contains": "mariadb",
+		"fail_message": "Не тома для БД"
+	},
+	
+	{
+		"command": "bash -c \"docker-compose down\"",
+	},
+	{
+		"command": "curl http://localhost/wp-admin",
+		"contains": "refused",
+		"fail_message": "Контейнеры не упали после выключения"
+	}
+	
+    ]
+    
+    }
+    }
+	]
+}

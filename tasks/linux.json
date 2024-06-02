@@ -1,0 +1,177 @@
+{
+	"title":"Основы Linux",
+	"virtual_machines":
+	[
+	{
+	"cores": 2,
+	"memory": 2,
+	"image": "fd8am3709e4dranquvoq",
+	"disks": [20]
+	}
+	],
+	"info":
+	[
+		{
+			"name": "diff_user",
+			"title": "Пользователь, которого нужно создать. Также ему необходимо запретить вход ПОСЛЕ ВЫПОЛНЕНИЯ ШАГОВ ИЗ-ПОД НЕГО",
+			"value": "${generated}"
+		},
+		{
+			"name": "gzip_name",
+			"title": "Имя архива с расширением gz",
+			"value": "${generated}"
+		},
+		{
+			"name": "created_file",
+			"title": "Файл, который необходимо создать (touch)",
+			"value": "${generated}"
+		},
+		{
+			"name": "tar_name",
+			"title": "Имя архива с расширением tar",
+			"value": "${generated}"
+		},
+		{
+			"name": "sh_scripts_directory",
+			"title": "Название папки для скриптов",
+			"value": "${generated}"
+		},
+		{
+			"name": "htop_parameter",
+			"title": "От созданнозго пользователя необходимо настроить диспетчер задач htop, добавив в отображение параметр",
+			"generated": ["VXID", "VPID", "TGID"]
+		}
+	],
+	"checks":
+	[
+	{
+        "vm_index":0,
+        "ssh_checker":
+    {
+    "check":
+    [
+        {
+            "command": "sudo find /home/ -name *bash_history*  | sudo xargs cat",
+			"contains": [
+			{
+				"value": "hostname",
+				"fail_message": "Не просмотрено имя машины командой hostname"
+			},
+			{
+				"value": "hostnamectl",
+				"fail_message": "Не просмотрена системная информация через hostnamectl"
+			},
+			{
+				"value": "du -dh",
+				"fail_message": "Не просмотрена о размере дисков"
+			},
+			{
+				"value": "ps",
+				"fail_message": "Не просмотрены процессы стандартной утилитой ps"
+			},
+			{
+				"value": "htop",
+				"fail_message": "Не запущена утилита htop"
+			},
+			{
+				"value": "atop",
+				"fail_message": "Не просмотрены процессы стандартной утилитой atop"
+			},
+			{
+				"value": "top",
+				"fail_message": "Не просмотрены процессы стандартной утилитой top"
+			},
+			{
+				"value": "mkfs",
+				"fail_message": "Диск не отформатирован"
+
+			},
+			{
+				"value": "|",
+				"fail_message": "Не использован конвейер при работе с терминалом"
+			},
+			{
+				"value": "adduser ${diff_user}",
+				"fail_message": "Не добавлен пользователь"
+			},
+			{
+				"value": "sudo passwd ${diff_user}",
+				"fail_message": "Не сменён пароль пользователя"
+			},
+			{
+				"value": "quotaon",
+				"fail_message": "Не включена квота для дисков"
+			}
+			]
+        },
+
+        {
+            "command": "ls $(sudo find /home/ -name *Doc*)",
+            "contains": [
+                {
+                    "value": "${tar_name}.tar"
+                },
+                {
+                    "value": "${gzip_name}.gz",
+                    "fail_message": "Нет файла gz"
+                }
+               
+                    
+            ]
+            
+           
+        },
+		
+		{
+            "command": "cat $(sudo find /home/ -name *bash_history* 2>/dev/null)",
+			"contains": [
+			{
+				"value": "dd",
+				"fail_message": "Нет архивации через dd"
+			},
+			{
+				"value": "cat /etc/passwd",
+				"fail_message": "Не получен список всех пользователей"
+			},
+			{
+				"value": "touch ${created_file}",
+				"fail_message": "Нет создания файла через touch"
+			},
+			{
+				"value": "chown ${diff_user} ${created_file}",
+				"fail_message": "Нет замены владельца директории"
+			}
+			
+			
+			]
+        },
+		{
+			"command": "sudo su - ${diff_user} -c \"sleep 3 | htop > htop-out\""
+		},
+		{
+			"command": "sudo head -c -10 $(sudo find /home/ -name *htop-out)  | tail -c +10",
+			"contains": "${htop_parametr}",
+			"fail_message": "Не настроен диспетчер задач htop"
+		},
+		{
+			"command": "mount | grep userquota",
+			"contains": [
+				{
+					"value":"usrquota"
+				}
+			]
+		},
+		
+       
+        
+
+   
+    ]
+    
+    }
+	
+	}
+ 
+    ]
+}
+    

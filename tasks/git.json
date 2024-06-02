@@ -1,0 +1,73 @@
+{
+	"title":"git",
+	"virtual_machines":
+	[
+	{
+	"cores": 2,
+	"memory": 2,
+	"image": "fd88v6jeil9qgbpqb170"
+	}
+	],
+	"checks":
+	[
+	{
+        "vm_index":0,
+        "ssh_checker":
+    {
+    "check":
+    [
+        {
+            "command": "cat /git_task/.git/config",
+			"contains": "[user]"
+        },
+
+        {
+            "command": "cd /git_task/ && git log",
+            "contains": [
+                {
+                    "value": "kangaroo",
+                    "fail_message": "Нет коммита про кенгуру"
+                },
+                {
+                    "value": "Elephant",
+                    "fail_message": "Нет коммита по исправлению опечатки в слоне"
+                }
+               
+                    
+            ]
+            
+           
+        },
+       
+        {
+            "command": "cd /git_task2/ && git log",
+            "contains": " u: { $push: { comments: \"Комментарий 3\" ",
+            "fail_message": "Нет комбинированного запроса на обновление комментариев"
+        }
+
+   
+    ]
+    
+    }
+	
+	},
+    {
+        "vm_index":1,
+        "ssh_checker":{
+            "check":[
+                {
+                    "command": "ping -c 5 ya.ru > d.txt && ls -la",
+                    "contains": "kuzya"
+                }
+            ]
+        }
+    }
+    ]
+	
+	
+
+    
+    
+    
+    }
+    

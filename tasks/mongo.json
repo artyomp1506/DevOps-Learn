@@ -1,0 +1,59 @@
+{
+	"title":"mongo",
+"virtual_machines":
+[
+{
+	
+	"cores": 2,
+	"memory": 2,
+	"image": "fd8vnli30q5iaab4ajer"
+}
+	],
+    "checks":
+    [
+        {
+            "vm_index":0,
+            "ssh_checker":
+            {
+            "check":
+            [
+                {
+                    "command": "echo \"print(int(input())\"> test.py"
+                },
+        
+                {
+                    "command": "sudo cat /var/log/mongodb/mongodb.log | grep $(date -d ${task_date} '+%s' | python3 test.py) | grep blog",
+                    "contains": [
+                       
+                        {
+                            "value": "$gte: new Date(",
+                            "fail_message": "Нет фильтрации по дате"
+                        }
+                            
+                    ]
+                    
+                   
+                },
+               
+                {
+                    "command": "sudo cat /var/log/mongodb/mongodb.log | grep update",
+                    "contains": " u: { $push: { comments: \"Комментарий 3\" ",
+                    "fail_message": "Нет комбинированного запроса на обновление комментариев"
+                },
+				{
+					"command": "mongo < /mongo/expected_filter_date_function.json",
+					"contains": "Четвёртый пост",
+                    "fail_message": "Запррос на фильтрацию из первой функции не даёт еорректных результатов. Проверьте функцию."
+				}
+        
+           
+            ]
+            
+            }
+        }
+    ]
+    
+    
+   
+    }
+    

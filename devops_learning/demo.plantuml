@@ -1,0 +1,586 @@
+@startuml
+
+title __DEMO's Class Diagram__\n
+
+  namespace com.example.demo {
+    class com.example.demo.DevOpsLearningApplication {
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      enum CheckResult {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.GitlabApiExecutor {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.GitlabChecker {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.GrafanaApiExecutor {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.GrafanaChecker {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      interface com.example.demo.checker.IChecker {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      interface com.example.demo.checker.ICheckerData {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      interface com.example.demo.checker.IPostgresCheckerData {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.PostgresCheckerData {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace checker {
+      class com.example.demo.checker.SshExecutor {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace cloud {
+      class com.example.demo.cloud.CloudResult {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace cloud {
+      class com.example.demo.cloud.CloudService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace condition_generators {
+      class com.example.demo.condition_generators.GitlabGenerator {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace condition_generators {
+      class com.example.demo.condition_generators.GrafanaGenerator {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace config {
+      class com.example.demo.config.RedisConfig {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace controller {
+      class com.example.demo.controller.AuthController {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace controller {
+      class com.example.demo.controller.Controller {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace controller {
+      class com.example.demo.controller.UserController {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dns {
+      class com.example.demo.dns.CloudflareService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.CheckDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.JwtRequest {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.JwtResponse {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.PostgresDataDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.TaskDetailResponse {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.TaskDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.TaskResponse {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.TaskRunDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.UserDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace dto {
+      class com.example.demo.dto.UserResponseDto {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      class com.example.demo.entity.GitlabTaskInfo {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      class com.example.demo.entity.GrafanaInfo {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      class com.example.demo.entity.JwtToken {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace check_results {
+        class com.example.demo.entity.check_results.Check {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace check_results {
+        interface com.example.demo.entity.check_results.IResult {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace check_results {
+        class com.example.demo.entity.check_results.Result {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace check_results {
+        enum State {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace task {
+        interface com.example.demo.entity.task.ITask {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace task {
+        class com.example.demo.entity.task.Task {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace task {
+        enum TaskType {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace user {
+        class com.example.demo.entity.user.JwtTokenPair {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace user {
+        enum Role {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace entity {
+      namespace user {
+        class com.example.demo.entity.user.User {
+        }
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace exception {
+      class com.example.demo.exception.IncorrectDataException {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace exception {
+      class com.example.demo.exception.UserAlreadyExistsException {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.CheckerRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.GitlabInfoRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.GrafanaInfoRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.IResultRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.ITaskRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.IUserRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace repository {
+      interface com.example.demo.repository.TokenRepository {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace security {
+      class com.example.demo.security.AuthJwtFilter {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace security {
+      class com.example.demo.security.JwtFactory {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace security {
+      class com.example.demo.security.JwtUtil {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace security {
+      class com.example.demo.security.SecurityConfig {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.AuthService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.GitlabTaskService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.GrafanaTaskService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.ImageService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.ResultService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.TaskService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.UserDetailService {
+      }
+    }
+  }
+  
+
+  namespace com.example.demo {
+    namespace service {
+      class com.example.demo.service.UserService {
+      }
+    }
+  }
+  
+
+  com.example.demo.checker.GitlabChecker o-- com.example.demo.checker.SshExecutor : sshExecutor
+  com.example.demo.checker.GrafanaChecker o-- com.example.demo.checker.GrafanaApiExecutor : grafanaApiExecutor
+  com.example.demo.checker.GrafanaChecker o-- com.example.demo.checker.SshExecutor : sshExecutor
+  com.example.demo.checker.PostgresCheckerData .up.|> com.example.demo.checker.IPostgresCheckerData
+  com.example.demo.controller.AuthController o-- com.example.demo.service.AuthService : authService
+  com.example.demo.controller.Controller o-- com.example.demo.service.GitlabTaskService : gitlabTaskService
+  com.example.demo.controller.Controller o-- com.example.demo.service.GrafanaTaskService : grafanaTaskService
+  com.example.demo.controller.Controller o-- com.example.demo.service.ResultService : resultService
+  com.example.demo.controller.Controller o-- com.example.demo.service.TaskService : taskService
+  com.example.demo.controller.Controller o-- com.example.demo.service.UserService : userService
+  com.example.demo.controller.UserController o-- com.example.demo.service.UserService : userService
+  com.example.demo.entity.check_results.Result .up.|> com.example.demo.entity.check_results.IResult
+  com.example.demo.entity.check_results.Result o-- com.example.demo.entity.check_results.State : state
+  com.example.demo.entity.task.Task .up.|> com.example.demo.entity.task.ITask
+  com.example.demo.entity.task.Task o-- com.example.demo.entity.task.TaskType : type
+  com.example.demo.entity.user.User o-- com.example.demo.entity.user.Role : role
+  com.example.demo.security.AuthJwtFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
+  com.example.demo.security.AuthJwtFilter o-- com.example.demo.security.JwtUtil : jwtUtil
+  com.example.demo.security.AuthJwtFilter o-- com.example.demo.repository.TokenRepository : tokenRepository
+  com.example.demo.security.AuthJwtFilter o-- com.example.demo.service.UserDetailService : userDetailsService
+  com.example.demo.security.JwtFactory o-- com.example.demo.security.JwtUtil : jwtUtil
+  com.example.demo.security.SecurityConfig o-- com.example.demo.security.AuthJwtFilter : authJwtFilter
+  com.example.demo.service.AuthService o-- com.example.demo.security.JwtFactory : jwtFactory
+  com.example.demo.service.AuthService o-- com.example.demo.security.AuthJwtFilter : jwtFilter
+  com.example.demo.service.AuthService o-- com.example.demo.repository.TokenRepository : tokenRepository
+  com.example.demo.service.AuthService o-- com.example.demo.service.UserService : userService
+  com.example.demo.service.GitlabTaskService o-- com.example.demo.repository.CheckerRepository : checkerRepository
+  com.example.demo.service.GitlabTaskService o-- com.example.demo.dns.CloudflareService : cloudflareService
+  com.example.demo.service.GitlabTaskService o-- com.example.demo.repository.GitlabInfoRepository : gitlabInfoRepository
+  com.example.demo.service.GitlabTaskService o-- com.example.demo.repository.IResultRepository : resultRepository
+  com.example.demo.service.GitlabTaskService o-- com.example.demo.repository.ITaskRepository : taskRepository
+  com.example.demo.service.GrafanaTaskService o-- com.example.demo.repository.CheckerRepository : checkerRepository
+  com.example.demo.service.GrafanaTaskService o-- com.example.demo.repository.GrafanaInfoRepository : grafanaInfoRepository
+  com.example.demo.service.GrafanaTaskService o-- com.example.demo.repository.IResultRepository : resultRepository
+  com.example.demo.service.GrafanaTaskService o-- com.example.demo.repository.ITaskRepository : taskRepository
+  com.example.demo.service.ResultService o-- com.example.demo.repository.IResultRepository : resultRepository
+  com.example.demo.service.TaskService o-- com.example.demo.service.ImageService : imageService
+  com.example.demo.service.TaskService o-- com.example.demo.repository.IResultRepository : resultRepository
+  com.example.demo.service.TaskService o-- com.example.demo.repository.ITaskRepository : taskRepository
+  com.example.demo.service.UserDetailService .up.|> org.springframework.security.core.userdetails.UserDetailsService
+  com.example.demo.service.UserDetailService o-- com.example.demo.repository.IUserRepository : userRepository
+  com.example.demo.service.UserService o-- com.example.demo.repository.IUserRepository : userRepository
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

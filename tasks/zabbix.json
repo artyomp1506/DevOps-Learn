@@ -1,0 +1,46 @@
+{
+	"title":"zabbix",
+	"cores": 2,
+	"memory": 2,
+	"image": "fd88v6jeil9qgbpqb170",
+    "info":
+    [
+    
+	
+	{
+    "name": "db_name",
+    "title": "Имя базы данных",
+    "value": "${generated}"
+    }
+    ],
+    
+    "ssh_checker":
+    {
+    "check":
+    [
+    {
+        "command": "mysql --user=zabbix --database=${db_name} --password=password --execute=\"SELECT * FROM users\" 2>&1 | grep Admin",
+        "contains": "Admin",
+        "fail_message": "В таблице users не существует пользователя Admin"
+    },
+    {
+        "command": "ls /etc/zabbix",
+        "contains": "zabbix_server.conf",
+        "fail_message": "Нет конфигурационного файла zabbix_server.conf"
+    
+    },
+    {
+        "command": "sudo cat /etc/zabbix/zabbix_server.conf",
+        "contains" : "DBName=${db_name}",
+        "ignore_spaces" : true
+    }
+	{
+        "command": "sudo service zabbix-frontend status",
+        "contains" : "running",
+        "ignore_spaces" : true
+    }
+    ]
+    
+    }
+    }
+    

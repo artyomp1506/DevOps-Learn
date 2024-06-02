@@ -1,0 +1,100 @@
+{
+	"title":"sss",
+	"cores": 2,
+	"memory": 2,
+	"image": "fd83i80nhb85lqtd44r6",
+    "type": "Grafana",
+    "info":
+    [
+    {
+    "name": "clickhouse_source",
+    "title": "Название источника Clickhouse",
+    "generate_value": true
+    },
+    {
+    "name": "mysql_source",
+    "title": "Название источника Mysql",
+    "generate_value": true
+    },
+    {
+    "name": "zabbix_source",
+    "title": "Название источника Zabbix",
+    "generate_value": true 
+    }
+    ],
+    "api_checker":
+    {
+    "headers":
+    [
+        {
+            "key": "Authorization",
+            "value": "Basic YWRtaW46YWRtaW4="
+        }
+    ],
+   
+    
+    "check":
+    [
+    {
+    
+    "path": "http://${ip}:${port}/api/search",
+    "contains":  [
+        "mysql",
+        "clickhouse",
+        "zabbix"
+    ],
+    "expected":
+    {
+        "path_to": "each/",
+        "values": {
+            "tags":[]       
+
+        }
+    }
+
+    
+    },
+    {
+        "prepare":
+        {
+            "path": "http://${ip}:${port}/api/search",
+            "headers":[
+                {
+                    "key": "Authorization",
+                    "value": "Basic YWRtaW46YWRtaW4="
+                }
+              
+            ],
+            "save": {
+                "name": "uid",
+                "parameter": "uid"
+            }
+        },
+        "test":{
+            "path": "http://${ip}:${port}/api/dashboards/uid/${uid}",
+            "contains" : ["meta111"]
+        }
+        
+    }
+    ]
+    },
+    "ssh_checker":
+    {
+    "check":
+    [
+    {
+        "command": "ls -a",
+        "contains": "a.txt",
+        "fail_message": "Не найдено файла a.txt"
+    },
+    {
+        "command": "ls -al | wc -l",
+        "equals": "39",
+        "fail_message": "error-bumbarash348 фигня"
+    
+    }
+    ]
+    
+    }
+    }
+    
