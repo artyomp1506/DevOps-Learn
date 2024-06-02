@@ -1,25 +1,29 @@
 {
-	"title":"Сети",
-	"virtual_machines":
-	[
-	{
-	"cores": 2,
-	"memory": 2,
-	"image": "fd8am3709e4dranquvoq",
-	"groups": ["mail"]
-	},
-	{
-	"cores": 2,
-	"memory": 2,
-	"image": "fd8am3709e4dranquvoq"
-	}
+	"title": "Сети",
+	"virtual_machines": [
+		{
+			"cores": 2,
+			"memory": 2,
+			"image": "fd8am3709e4dranquvoq",
+			"groups": [
+				"mail"
+			]
+		},
+		{
+			"cores": 2,
+			"memory": 2,
+			"image": "fd8am3709e4dranquvoq"
+		}
 	],
-	"info":
-	[
+	"info": [
 		{
 			"name": "ping_domain",
 			"title": "Домен, на котором тестировать команду ping",
-			"generated": ["ya.ru", "e1.ru", "rt-55.keenetic.pro"]
+			"generated": [
+				"ya.ru",
+				"e1.ru",
+				"rt-55.keenetic.pro"
+			]
 		},
 		{
 			"name": "tracert_domain",
@@ -27,69 +31,61 @@
 			"value": "test.denis-gorbunov.ai-info"
 		}
 	],
-	"checks":
-	[
-	{
-        "vm_index":0,
-        "ssh_checker":
-    {
-    "check":
-    [
-        {
-            "command": "sudo find /home/ -name *bash_history*  | sudo xargs cat",
-			"contains": [
-			{
-				"value": "ping ${ping_domain}",
-				"fail_message": "Не пропингован необходимый домен"
-			},
-			{
-				"value": "ping ${int_ip1}",
-				"fail_message": "Не пропингован ip соседнего узла в локалке"
-			},
-			{
-				"value": "ping 10.128.0.1",
-				"fail_message": "Не пропингован шлюз"
-			},
-			{
-				"value": "traceroute ${tracert_domain}"
-			}
-			
-			
-			]
-        },
+	"checks": [
 		{
-			"command": "ip=$(nslookup -type=A ${ping_domain} | grep -A2 -h 'Non*' |tail -n 1| sed  's/Address: //') >> ~/.bashrc",
-			"contains": ""
-		},
-
-        
-		{
-            "command": "sudo cat $(sudo find /home/ -name *bash_history* 2>/dev/null)",
-			"contains": [
-			{
-				"value": "nslookup -type=A urfu.ru"
-			},
-			
-			{
-				"value": "nslookup -type=A elearn.urfu.ru"
+			"vm_index": 0,
+			"ssh_checker": {
+				"check": [
+					{
+						"command": "sudo find /home/ -name *bash_history*  | sudo xargs cat",
+						"contains": [
+							{
+								"value": "ping ${ping_domain}",
+								"fail_message": "Не пропингован необходимый домен"
+							},
+							{
+								"value": "ping ${int_ip1}",
+								"fail_message": "Не пропингован ip соседнего узла в локалке"
+							},
+							{
+								"value": "ping 10.128.0.1",
+								"fail_message": "Не пропингован шлюз"
+							},
+							{
+								"value": "traceroute ${tracert_domain}"
+							}
+						]
+					},
+					{
+						"command": "ip=$(nslookup -type=A ${ping_domain} | grep -A2 -h 'Non*' |tail -n 1| sed  's/Address: //') >> ~/.bashrc",
+						"contains": ""
+					},
+					{
+						"command": "sudo cat /var/log/iptables.log | grep $ip",
+						"contains": "ICMP",
+						"fail_message": "Не было ICMP-трафика для необходимого домена"
+					},
+					{
+						"command": "sudo cat $(sudo find /home/ -name *bash_history* 2>/dev/null)",
+						"contains": [
+							{
+								"value": "nslookup -type=A urfu.ru"
+							},
+							{
+								"value": "nslookup -type=mx microsoft.com"
+							},
+							{
+								"value": "nslookup -type=A elearn.urfu.ru"
+							},
+							{
+								"value": "telnet rt-55.keenetic.pro 445",
+								"fail_message": "В истории команд нет команды для проверки 445 порта"
+							}
+						]
+					}
+				]
 			}
-			
-			
-			
-			]
-        }
-		
-		
-       
-        
-
-   
-    ]
-    
-    }
-	
-	}
- 
-    ]
+		}
+	]
 }
     
