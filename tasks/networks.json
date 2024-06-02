@@ -28,7 +28,7 @@
 		{
 			"name": "tracert_domain",
 			"title": "Домен, до которого необходимо провести трассировку маршрута",
-			"value": "test.denis-gorbunov.ai-info"
+			"value": "test.denis-gorbunov.ai-info.ru"
 		}
 	],
 	"checks": [
@@ -79,7 +79,7 @@
 							},
 							{
 								"value": "telnet rt-55.keenetic.pro 445",
-								"fail_message": "В истории команд нет команды для проверки 445 порта"
+								"fail_message": "В истории команд нет команды для проверки 445 порта "
 							}
 						]
 					}
