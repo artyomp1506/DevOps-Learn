@@ -50,18 +50,7 @@
     
     }
 	
-	},
-    {
-        "vm_index":1,
-        "ssh_checker":{
-            "check":[
-                {
-                    "command": "ping -c 5 ya.ru > d.txt && ls -la",
-                    "contains": "kuzya"
-                }
-            ]
-        }
-    }
+	}
     ]
 	
 	
