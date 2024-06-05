@@ -19,7 +19,7 @@ import java.util.HashMap;
 public class DevOpsLearningApplication {
 
 	public static void main(String[] args) throws Exception {
-		//SpringApplication.run(DevOpsLearningApplication.class, args);
+		SpringApplication.run(DevOpsLearningApplication.class, args);
 		//System.out.println(System.getProperty("user.dir"));
 //		var isSudoUser = true;
 //		var groups = isSudoUser? "    groups: sudo\n":"";
@@ -34,8 +34,7 @@ public class DevOpsLearningApplication {
 //				.append("      %s")
 //				.toString(),
 //				"userName", groups, sudoSettings, "sshKey");
-		var executor = new SshExecutor("158.160.116.185", "checker", 22, "C:\\Users\\xeo\\Desktop\\id_rsa");
-		System.out.println(executor.getResult("wget http://localhost"));
+
 
 
 	}
