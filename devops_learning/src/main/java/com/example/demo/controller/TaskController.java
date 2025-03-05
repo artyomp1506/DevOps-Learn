@@ -3,12 +3,14 @@ package com.example.demo.controller;
 import com.example.demo.dto.*;
 import com.example.demo.entity.GitlabTaskInfo;
 import com.example.demo.entity.GrafanaInfo;
+import com.example.demo.entity.check_results.Check;
 import com.example.demo.entity.check_results.Result;
 import com.example.demo.entity.task.Task;
 import com.example.demo.entity.task.TaskTemplate;
 import com.example.demo.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +39,10 @@ public class TaskController {
     this.userService = userService;
     this.templateService = templateService;
 }
+   // @ExceptionHandler(RuntimeException.class)
+    //public ExceptionDto handleException(RuntimeException e) {
+        //return new ExceptionDto(e.getMessage());
+   // }
     @PreAuthorize("hasRole('Student')")
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/tasks/")
@@ -47,6 +53,30 @@ public class TaskController {
      var status = task.getStatus();
 
     return new TaskResponse(id, status);
+    }
+    @PostMapping("/tasks/moodle")
+    public TaskResponse createTaskForMoodle(@RequestBody TaskDto taskDto) {
+
+        var task = taskService.saveMoodle(taskDto.getTemplateId());
+        var id = task.getId();
+        var status = task.getStatus();
+
+        return new TaskResponse(id, status);
+    }
+    @GetMapping("/yandex/{templateId}")
+    public List<InputParameterDto> getYandexInputParameters( @PathVariable long templateId) throws IOException, ParseException {
+    return taskService.getInputParameters(templateId);
+    }
+    @PreAuthorize("hasRole('Student')")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PostMapping("/tasks/local")
+    public TaskResponse createLocalTask(Principal principal, @RequestBody LocalTaskDTO taskDto) {
+        var userId = userService.getUserFromPrincipal(principal).getId();
+        var task = taskService.saveLocal(userId, taskDto.getTemplateId(), taskDto.getIpAddresses());
+        var id = task.getId();
+        var status = task.getStatus();
+
+        return new TaskResponse(id, status);
     }
     //@PreAuthorize("hasRole('Student')")
     @SecurityRequirement(name = "Bearer Authentication")
@@ -114,7 +144,7 @@ public class TaskController {
     return new TemplateDto(id, template.getTitle());
     }
 
-    @PreAuthorize("hasRole('Student')")
+    @PreAuthorize("hasRole('Student') or hasRole('Teacher')")
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/tasks/{id}/info")
     public List<TaskInfoDto> getTaskInfo(Principal principal, @PathVariable long id) throws IOException, ParseException {
@@ -124,6 +154,7 @@ public class TaskController {
         outputInfo.add(new TaskInfoDto(element.getTitle(), element.getValue()));
     return outputInfo;
     }
+    @Operation(summary = "Проверить задачу")
     @GetMapping("/tasks/{taskId}/check")
     public CheckDto checkTask(@PathVariable long taskId) throws FileNotFoundException {
         var check = taskService.check(taskId);
@@ -135,14 +166,54 @@ public class TaskController {
 
 
 
+    @Operation(summary = "Получить все результаты по id задачи")
     @GetMapping("/task/results/{taskId}")
     public List<Result> getTaskResultById(@PathVariable long taskId)
     {
         return taskService.getResultsByTaskId(taskId);
     }
+    @Operation(summary = "Получить все результаты по id задачи")
+    @GetMapping("/task/checks/{taskId}")
+    public List<CheckDto> getCheckIds(@PathVariable  long taskId) {
+        var results = new ArrayList<CheckDto>();
+        var checks = taskService.getChecksByTaskId(taskId);
+        for (var check:checks)
+            results.add(new CheckDto(check.getId(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(check.getDate())));
+        return results;
+    }
+    @Operation(summary = "Получить все результаты по id проверки")
     @GetMapping("/results/{checkId}")
     public List<Result> getTaskResultByCheckId(@PathVariable long checkId)
     {
         return resultService.getByCheckId(checkId);
+    }
+    @Operation(summary = "Добавить шаблон")
+    @PostMapping("/add-template")
+    public void addTemplate(@RequestBody TemplateAddDto newTemplate) throws IOException, RuntimeException {
+        templateService.addTemplate(newTemplate.getName(), newTemplate.getConfigBody().toJSONString().replace("\\/", "/"));
+    }
+    @Operation(summary = "Удалить шаблон")
+    @DeleteMapping("/delete-template/{id}")
+    public void deleteTemplate(@PathVariable long id)
+    {
+        templateService.deleteTemplate(id);
+    }
+    @Operation(summary = "Посмотреть содержимое шаблона по id")
+    @GetMapping("/read-template/{id}")
+    public JSONObject readTemplate(@PathVariable long id) throws RuntimeException {
+        return templateService.readTemplate(id);
+    }
+    @Operation(summary = "Редактировать шаблон по id")
+    @PostMapping("/edit-template/{id}")
+    public void editTemplate(@RequestBody TemplateEditDto editRequest, @PathVariable long id)
+    {
+        templateService.editTemplate(id, editRequest.getConfigBody().toJSONString().replace("\\/", "/" ));
+    }
+    @Operation(summary = "Проверить задачи из Яндекса")
+    @PostMapping("/yandex/check/{id}")
+    public CheckDto checkYandex(@PathVariable long id, @RequestBody YandexCheckDto checkObject) {
+        var check = taskService.checkYandex(id, checkObject.getYcToken(), checkObject.getYcFolderId(), checkObject.getInputParameters());
+        return new CheckDto(check.getId(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(check.getDate()));
+    
     }
 }

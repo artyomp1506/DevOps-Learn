@@ -2,7 +2,9 @@ package com.example.demo.entity.task;
 
 import com.example.demo.entity.user.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,12 +23,17 @@ public class Task implements ITask {
   private TaskTemplate template;
 
   private Status status;
+    private long mark;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "task_id")
   private List<TaskInfo> infoList;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name ="task_id")
     private List<VirtualMachine> machines;
+
+    public Task(TaskTemplate taskTemplate) {
+        template = taskTemplate;
+    }
 
     public List<VirtualMachine> getMachines() {
         return machines;
@@ -109,5 +116,13 @@ public class Task implements ITask {
 
     public void setTemplate(TaskTemplate template) {
         this.template = template;
+    }
+
+    public long getMark() {
+        return mark;
+    }
+
+    public void setMark(long mark) {
+        this.mark = mark;
     }
 }

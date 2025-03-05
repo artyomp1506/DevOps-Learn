@@ -1,0 +1,22 @@
+{
+"title": "Создание балансировщика",
+"checks": [
+{
+"yandex": {
+"input": [
+{
+"title": "Id",
+"config_name": "id"
+}
+],
+"check":
+{
+"load_balancer": {
+"port": 80,
+"listener_port": 80
+}
+}
+}
+}
+]
+}

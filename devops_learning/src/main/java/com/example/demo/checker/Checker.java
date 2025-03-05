@@ -161,7 +161,7 @@ public class Checker {
                         savePrepareValues((JSONObject) obj, (JSONObject) prepare.get("save") );
                         results.addAll(checkApiTest((JSONObject) checkObject.get("test"), mappedHeaders));
                     }
-                else {
+                else if (result instanceof JSONObject) {
                     savePrepareValues((JSONObject) result, (JSONObject) prepare.get("save") );
                     results.addAll(checkApiTest((JSONObject) checkObject.get("test"), mappedHeaders));
                 }
@@ -233,19 +233,17 @@ public class Checker {
         System.out.println(parametersString);
         if (parametersString == null)
             return null;
-        Pattern pattern = Pattern.compile("(\\$\\{(.*?)\\})", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("(\\$\\{(.*?)\\})",
+                Pattern.MULTILINE);
         StringBuilder result = new StringBuilder(parametersString);
         var matcher = pattern.matcher(result);
         int startIndex=0;
         while (matcher.find(startIndex)) {
             System.out.println(matcher.group(2));
             var replace = (String) variables.get(matcher.group(2));
-
             result.replace(matcher.start(), matcher.end(), replace);
             System.out.println(replace);
-            startIndex= matcher.start()+replace.length();
-
-
+            startIndex = matcher.start()+replace.length();
         }
         return result.toString();
     }
@@ -303,21 +301,20 @@ public class Checker {
 
     }
 
-    private List<Result> checkExpectedValue(JSONObject currentObject, JSONObject expectedFields, boolean checkAllElements,
-                                            String failMessage) {
+    private List<Result> checkExpectedValue(JSONObject currentObject, JSONObject expectedFields,
+                                            boolean checkAllElements, String failMessage) {
         var results = new ArrayList<Result>();
         for (var key : expectedFields.keySet()) {
             var expectedValue = expectedFields.get(key);
             var actual = currentObject.get(key);
             if (!actual.equals(expectedValue)) {
                 var message = failMessage != null ? failMessage :
-                        String.format("Неверное значение для параметра %s - %s, а должно быть %s", key, actual, expectedValue);
+                        String.format("Неверное значение для параметра %s - %s, а должно быть %s", key,
+                                actual, expectedValue);
                 results.add(new Result(task, message, State.Wrong, check));
                 if (!checkAllElements)
                     return results;
-
             }
-
         }
         return results;
     }

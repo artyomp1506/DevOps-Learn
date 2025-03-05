@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.UserDto;
 import com.example.demo.dto.UserResponseDto;
 import com.example.demo.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -19,7 +20,7 @@ import java.security.Principal;
 @AllArgsConstructor
 public class UserController {
     private UserService userService;
-    @PreAuthorize("hasRole('Student')")
+   @Operation(description = "Получить информацию о пользователе")
     @GetMapping("/me")
     public UserResponseDto getMe(Principal principal)
     {

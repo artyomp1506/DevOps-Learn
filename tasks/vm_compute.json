@@ -1,0 +1,29 @@
+{
+"title": "Практическая работа. Знакомство с Yandex Cloud CLI",
+"checks": [
+  {
+"yandex": {
+"input": [
+{
+"title": "Идентификатор одной из машин",
+"config_name": "id" 
+}
+],
+"check":
+{
+"compute": {
+"metadata":
+[
+{
+"key": "userdata",
+  "value": "nginx",
+  "contains": true
+}
+
+]
+}
+}
+}
+}
+]
+}

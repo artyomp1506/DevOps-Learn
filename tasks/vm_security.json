@@ -1,0 +1,33 @@
+{
+"title": "Группы безопасности",
+"checks": [
+{
+"yandex": {
+"input": [
+{
+"title": "Id группы безопасности",
+"config_name": "id"
+
+}
+],
+"check":
+{
+"security": {
+"egress":
+{
+"cidr": "0.0.0.0/0",
+"id": "[id]",
+"ports": [80, 443]
+},
+"ingress":
+{
+"cidr": "0.0.0.0/0",
+"id": "[id]",
+"ports": [80, 22]
+}
+}
+}
+}
+}
+]
+}

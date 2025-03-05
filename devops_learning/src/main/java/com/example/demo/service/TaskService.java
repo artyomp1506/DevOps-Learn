@@ -3,10 +3,11 @@ package com.example.demo.service;
 import com.example.demo.checker.Checker;
 import com.example.demo.checker.InfoGenerator;
 import com.example.demo.checker.SshExecutor;
-import com.example.demo.cloud.CloudResult;
-import com.example.demo.cloud.ICloudService;
+import com.example.demo.cloud.*;
+import com.example.demo.dto.InputParameterDto;
 import com.example.demo.entity.check_results.Check;
 import com.example.demo.entity.check_results.Result;
+import com.example.demo.entity.check_results.State;
 import com.example.demo.entity.task.*;
 import com.example.demo.entity.user.User;
 import com.example.demo.repository.*;
@@ -19,7 +20,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +41,7 @@ public class TaskService {
     private IUserRepository userRepository;
     private VirtualMachineRepository machineRepository;
     private ICloudService cloudService;
+    private final long MOODLE_USERS_ID = -1;
 
     @Autowired
     public TaskService(ITaskRepository taskRepository, IResultRepository resultRepository, ImageService imageService, TemplateRepository templateRepository, InfoRepository infoRepository, CheckerRepository checkerRepository, IUserRepository userRepository, VirtualMachineRepository machineRepository, ICloudService cloudService) {
@@ -47,6 +54,22 @@ public class TaskService {
         this.userRepository = userRepository;
         this.machineRepository = machineRepository;
         this.cloudService = cloudService;
+       // init();
+    }
+    public void init() {
+        var tasks = taskRepository.findAll();
+        for (var task:tasks)
+        {
+            var results = getResultsByTaskId(task.getId());
+            for (var result:results)
+            {
+                var check = result.getCheck();
+                if (check.taskId==0) {
+                    check.taskId = task.getId();
+                    checkerRepository.save(check);
+                }
+            }
+        }
     }
     public long save(User user, String typeName)  {
         var task = new Task(user, TaskType.valueOf(typeName));
@@ -57,6 +80,28 @@ public class TaskService {
     {
         var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
         task.setStatus(Status.NoVm);
+        taskRepository.save(task);
+        return task;
+    }
+    public Task saveMoodle(long templateId)
+    {
+        var task = new Task(templateRepository.findById(templateId).get());
+        task.setStatus(Status.NoVm);
+        taskRepository.save(task);
+        return task;
+    }
+    public Task saveLocal(long userId, long templateId, String[] ipAddresses) {
+        var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
+        taskRepository.save(task);
+        var machines = new ArrayList<VirtualMachine>();
+        for (var ipAddress:ipAddresses)
+            machines.add(new VirtualMachine(null, ipAddress, null, task.getId()));
+        machineRepository.saveAll(machines);
+        taskRepository.save(task);
+        return  task;
+    }
+    public Task saveCloud(long userId, long templateId) {
+        var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
         taskRepository.save(task);
         return task;
     }
@@ -197,8 +242,11 @@ public class TaskService {
                 return newInfo;
         }
     }
+    public List<Check> getChecksByTaskId(long taskId) {
+        return checkerRepository.getByTaskId(taskId);
+    }
     public Check check(long taskId) throws FileNotFoundException {
-        var check = new Check();
+        var check = new Check(taskId);
         checkerRepository.save(check);
         var checkId = check.getId();
         var task = taskRepository.findById(taskId).get();
@@ -229,17 +277,84 @@ public class TaskService {
                         variables.put(String.format("ip%d", i), machineIp);
                         variables.put(String.format("int_ip%d", i), machineInternalIp);
                     }
-
-                    var sshExecutor = new SshExecutor(variables.get(String.format("ip%d", vmIndex)), "checker", 22, "C:\\Users\\xeo\\Desktop\\id_rsa");
+                    var sshPassword = variables.getOrDefault("ssh_password", null);
+                    var sshExecutor = new SshExecutor(variables.get(String.format("ip%d", vmIndex)), "checker", sshPassword, 22, "C:\\Users\\xeo\\Desktop\\id_rsa");
                     var checker = new Checker(sshExecutor, chkeobj, variables, check, task);
                     var results = checker.makeCheck();
                     resultRepository.saveAll(results);
                 }
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }).start();
         return check;
+    }
+    public Check checkYandex(long taskId, String ycToken, String ycFolderId,  JSONObject inputParameters) {
+        var task = taskRepository.findById(taskId).get();
+        var taskCheck = new Check(taskId);
+        checkerRepository.save(taskCheck);
+        var template = task.getTemplate();
+        var filePath = template.getFilePath();
+        JSONObject checkObject = null;
+        try {
+            checkObject = (JSONObject) new JSONParser().parse(new FileReader(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        var checks = (JSONArray) checkObject.get("checks");
+        new Thread(()-> {
+            try {
+                for (var currentCheck : checks) {
+                    var chkeobj = (JSONObject) currentCheck;
+                    var yandex = (JSONObject) chkeobj.get("yandex");
+                    var yandexCheck = (JSONObject) yandex.get("check");
+                    var results = new ArrayList<Result>();
+                    if (yandexCheck.containsKey("compute")) {
+                        results.addAll(new YandexComputeChecker(ycToken, ycFolderId, inputParameters, task, taskCheck).checkMachine((JSONObject) yandexCheck.get("compute"), (String) inputParameters.get("vm_id")));
+                    }
+                    if (yandexCheck.containsKey("networks"))
+                    {
+                        var checker = new YandexVPCChecker(ycToken, ycFolderId, inputParameters, task, taskCheck);
+                        var networks = (JSONObject) yandexCheck.get("networks");
+                        var security = (JSONObject) yandexCheck.getOrDefault("security", null);
+                        if (networks!=null)
+                            results.addAll(checker.checkNetwork(networks));
+                        else if (security!=null) {
+                            results.addAll(checker.checkSecurityGroup(security));
+                        }
+                    }
+                    if (yandexCheck.containsKey("snapshot"))
+                    {
+                        var snapshotChecker = new YandexSnapshotChecker(ycToken, ycFolderId, inputParameters, task, taskCheck);
+                        results.add(snapshotChecker.checkSnapshot((JSONObject) yandexCheck.get("snapshot")));
+                    }
+                    if (yandexCheck.containsKey("load_balancer"))
+                        results.addAll(new YandexLoadBalancerChecker(ycToken, ycFolderId, inputParameters, task, taskCheck).
+                                checkLoadBalancer((JSONObject) yandexCheck.get("load_balancer") ));
+                        
+
+
+                    resultRepository.saveAll(results);
+                }
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+
+            }
+        }).start();
+        return taskCheck;
+    }
+    public List<InputParameterDto> getInputParameters(long id) throws IOException, ParseException {
+        var template = templateRepository.findById(id).get();
+        var path = template.getFilePath();
+        var taskObject = (JSONObject) new JSONParser().parse(new FileReader(path));
+       var checks = (JSONArray) taskObject.get("checks");
+       var current = (JSONObject) checks.get(0);
+       return new YandexInputHandler().getInputFields(current);
+
     }
     private String getAdditionalGroupsParameter(JSONArray groups)
     {

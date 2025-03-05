@@ -1,0 +1,30 @@
+{
+"title": "Практическая работа. Получаем доступ к серийной консоли",
+"checks": [
+  {
+"yandex": {
+"input": [
+{
+"title": "Id ВМ",
+"config_name": "vm_id"
+}
+],
+"check":
+{
+"compute": {
+"metadata":
+[
+{
+"key": "serial-port-enable",
+  "value": 1,
+  "fail_message": 
+  "Доступ к серийной консоли не включен"
+}
+
+]
+}
+}
+}
+}
+]
+}

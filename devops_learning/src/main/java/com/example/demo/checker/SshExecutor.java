@@ -11,12 +11,14 @@ public class SshExecutor {
     private String username;
     private int port;
     private String keyPath;
+    private String password;
 
-    public SshExecutor(String ip, String username, int port, String keyPath) {
+    public SshExecutor(String ip, String username, String password, int port, String keyPath) {
         this.ip = ip;
         this.username = username;
         this.port = port;
         this.keyPath = keyPath;
+        this.password = password;
 
     }
 
@@ -31,7 +33,9 @@ public class SshExecutor {
 
 
             session = jsch.getSession(username, ip, port);
-            jsch.addIdentity(keyPath);
+            if (this.password!=null)
+                session.setPassword(this.password);
+           else jsch.addIdentity(keyPath);
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
 
@@ -40,9 +44,10 @@ public class SshExecutor {
             ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
             channel.setOutputStream(responseStream);
             channel.connect();
+            session.setTimeout(500);
 
             while (channel.isConnected()) {
-                Thread.currentThread().sleep(100);
+                Thread.currentThread().sleep(500);
             }
 
             return new String(responseStream.toByteArray());

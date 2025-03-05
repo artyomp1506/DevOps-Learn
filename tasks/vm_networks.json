@@ -1,0 +1,23 @@
+{
+"title": "Создание сети с подсетями и ВМ",
+"checks": [
+{
+"yandex": {
+"input": [
+{
+"title": "Id сети",
+"config_name": "id"
+}
+],
+"check":
+{
+"networks":
+{
+"cidr": "192.168.0.0/28",
+"id": "[id]"
+}
+}
+}
+}
+]
+}

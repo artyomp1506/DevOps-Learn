@@ -15,6 +15,6 @@ public class Config {
     @Bean
     public ICloudService getCloudService()
     {
-        return new CloudService(folderId, subnetId);
+        return new CloudService(folderId, subnetId, null);
     }
 }

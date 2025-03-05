@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import com.example.demo.checker.GrafanaChecker;
+
 import com.example.demo.checker.SshExecutor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

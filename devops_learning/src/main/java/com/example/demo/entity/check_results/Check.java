@@ -1,9 +1,6 @@
 package com.example.demo.entity.check_results;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -18,9 +15,16 @@ public class Check {
     @GeneratedValue
     private long id;
     private final Date date;
-    public Check()
+    @Column(columnDefinition = " bigint default 0")
+    public  long taskId;
+    public Check(long taskId)
     {
         date = Calendar.getInstance().getTime();
+        this.taskId = taskId;
+    }
+    private Check()
+    {
+        date = new Date();
     }
 
 }

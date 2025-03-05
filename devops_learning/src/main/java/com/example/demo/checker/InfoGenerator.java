@@ -1,6 +1,7 @@
 package com.example.demo.checker;
 
 import com.example.demo.entity.task.TaskInfo;
+import org.apache.commons.lang3.NotImplementedException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -60,5 +61,8 @@ public class InfoGenerator {
         for (int i=0; i<8; i++)
             builder.append((char)('A'+random.nextInt(40, 57)));
         return builder.toString();
+    }
+    public List<String> getInputParameters(JSONArray input) {
+        throw new NotImplementedException();
     }
 }
