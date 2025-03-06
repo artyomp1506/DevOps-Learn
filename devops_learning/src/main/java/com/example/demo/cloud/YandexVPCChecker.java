@@ -55,7 +55,7 @@ public class YandexVPCChecker extends YandexChecker {
             results.addAll(checkRules(checkObject, group.get(), Direction.INGRESS));
         }
         if (results.isEmpty())
-            results.add(new Result(getTask(), String.format("Группа безопасности с id = %s корректна", id)))
+            results.add(new Result(getTask(), String.format("Группа безопасности с id = %s корректна", id), State.Correct, getCheck()));
         return results;
     }
 
