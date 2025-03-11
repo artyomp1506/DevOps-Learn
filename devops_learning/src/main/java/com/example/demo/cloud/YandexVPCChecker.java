@@ -30,16 +30,23 @@ public class YandexVPCChecker extends YandexChecker {
         }
         var id = network.get().getId();
         var subnets = getCloudService().getSubnets(getYcFolderId());
-        var subnet = subnets.stream().filter(currentSubnet->currentSubnet.getNetworkId().equals(id)).findFirst();
-        if (subnet.isEmpty())
-        {
-            results.add(new Result(getTask(), "Данной подсети не существует", State.Wrong, getCheck() ));
+        var filteredSubnets = subnets.stream().filter(currentSubnet -> currentSubnet.getNetworkId().equals(id)).toList();
+        if (filteredSubnets.stream().findFirst().isEmpty()) {
+            results.add(new Result(getTask(), "Данной подсети не существует", State.Wrong, getCheck()));
             return results;
         }
-        var actualCIDR = subnet.get().getV4CidrBlocksList();
-       var expectedCIDR = (String) checkObject.get("cidr");
-        if (!actualCIDR.contains(expectedCIDR))
-            results.add(new Result(getTask(), String.format("Подсети с адресацией %s не существует", expectedCIDR), State.Wrong, getCheck()));
+        var expectedCIDR = (String) checkObject.get("cidr");
+        for (var subnet : filteredSubnets) {
+            var actualCIDR = subnet.getV4CidrBlocksList();
+
+            if (actualCIDR.contains(expectedCIDR)) {
+                results.add(new Result(getTask(), "Сеть настроена корректно", State.Correct, getCheck()));
+                return results;
+            }
+
+
+        }
+        results.add(new Result(getTask(), String.format("Подсети с адресацией %s не существует", expectedCIDR), State.Wrong, getCheck()));
         return results;
     }
     public List<Result> checkSecurityGroup(JSONObject checkObject) {
@@ -49,6 +56,7 @@ public class YandexVPCChecker extends YandexChecker {
         var group = groups.stream().filter(currentGroup->currentGroup.getId().equals(id)).findFirst();
         if (group.isEmpty()) {
             results.add(new Result(getTask(), "Данной группы не найдено", State.Wrong, getCheck()));
+            return results;
         }
         else {
             results.addAll(checkRules(checkObject, group.get(), Direction.EGRESS));
