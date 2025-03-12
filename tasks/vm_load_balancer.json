@@ -12,6 +12,7 @@
 "check":
 {
 "load_balancer": {
+"id":"[id"
 "port": 80,
 "listener_port": 80
 }
