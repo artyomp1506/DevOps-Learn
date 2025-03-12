@@ -34,7 +34,7 @@ public class YandexLoadBalancerChecker extends YandexChecker {
             if (results.isEmpty())
                 results.add(new Result(getTask(), "Балансировщик корректен", State.Correct, getCheck()));
         } catch (Exception e) {
-            results.add(new Result(getTask(), e.getMessage(), State.Warning, getCheck()));
+            results.add(new Result(getTask(), e.toString(), State.Warning, getCheck()));
         }
        return results;
 
