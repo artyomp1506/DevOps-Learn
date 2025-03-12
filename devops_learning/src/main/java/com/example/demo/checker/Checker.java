@@ -30,6 +30,7 @@ public class Checker {
     private HashMap<String, String> variables;
     private Check check;
     private Task task;
+    private JSONObject inputParameters;
 
     public Checker(SshExecutor executor, JSONObject checkers, HashMap<String, String> variables, Check check, Task task) {
         this.executor = executor;
@@ -37,6 +38,13 @@ public class Checker {
         this.variables = variables;
         this.check = check;
         this.task = task;
+    }
+    public Checker(JSONObject inputParameters, JSONObject checkers, HashMap<String, String> variables, Check check, Task task) {
+        this.checkers = checkers;
+        this.variables = variables;
+        this.check = check;
+        this.task = task;
+        //this.inputParameters = in
     }
     public List<Result> makeCheck() {
         var results = new ArrayList<Result>();
@@ -223,7 +231,10 @@ public class Checker {
                 dict.put("value", Base64.toBase64String(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8)));
 
             }
-            else dict.put("value", (String) objHeader.get("value"));
+            else {
+                var unparsedValue = (String) objHeader.get("value");
+                dict.put("value", getInputValid(unparsedValue) );
+            }
             headersMaps.add(dict);
         }
         return headersMaps;
@@ -247,7 +258,24 @@ public class Checker {
         }
         return result.toString();
     }
-
+    protected String getInputValid(String input) {
+        System.out.println(input);
+        if (input == null)
+            return null;
+        Pattern pattern = Pattern.compile("(\\[(.*?)\\])",
+                Pattern.MULTILINE);
+        StringBuilder result = new StringBuilder(input);
+        var matcher = pattern.matcher(result);
+        int startIndex=0;
+        while (matcher.find(startIndex)) {
+            System.out.println(matcher.group(2));
+            var replace = (String) inputParameters.get(matcher.group(2));
+            result.replace(matcher.start(), matcher.end(), replace);
+            System.out.println(replace);
+            startIndex = matcher.start()+replace.length();
+        }
+        return result.toString();
+    }
 
     private List<Result> checkContains(String response, JSONArray containsList, String failMessage, String defaultMessage) {
         var results = new ArrayList<Result>();
