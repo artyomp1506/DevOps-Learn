@@ -15,6 +15,7 @@
 "metadata":
 [
 {
+"id": "[id]"
 "key": "serial-port-enable",
   "value": 1,
   "fail_message": 
