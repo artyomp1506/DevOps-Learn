@@ -305,13 +305,14 @@ public class TaskService {
             throw new RuntimeException(e);
         }
         var checks = (JSONArray) checkObject.get("checks");
+        var results = new ArrayList<Result>();
         new Thread(()-> {
             try {
                 for (var currentCheck : checks) {
                     var chkeobj = (JSONObject) currentCheck;
                     var yandex = (JSONObject) chkeobj.get("yandex");
                     var yandexCheck = (JSONObject) yandex.get("check");
-                    var results = new ArrayList<Result>();
+
                     if (yandexCheck.containsKey("compute")) {
                         results.addAll(new YandexComputeChecker(ycToken, ycFolderId, inputParameters, task, taskCheck).checkMachine((JSONObject) yandexCheck.get("compute"), (String) inputParameters.get("vm_id")));
                     }
@@ -337,13 +338,14 @@ public class TaskService {
                         
 
 
-                    resultRepository.saveAll(results);
+
                 }
 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                results.add(new Result(task, e.getMessage(), State.Wrong, taskCheck));
 
             }
+            resultRepository.saveAll(results);
         }).start();
         return taskCheck;
     }
