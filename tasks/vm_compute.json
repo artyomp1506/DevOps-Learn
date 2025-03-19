@@ -6,7 +6,7 @@
 "input": [
 {
 "title": "Идентификатор одной из машин",
-"config_name": "id" 
+"config_name": "vm_id" 
 }
 ],
 "check":
