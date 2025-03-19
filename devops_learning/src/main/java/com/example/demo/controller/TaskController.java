@@ -212,6 +212,7 @@ public class TaskController {
     @Operation(summary = "Проверить задачи из Яндекса")
     @PostMapping("/yandex/check/{id}")
     public CheckDto checkYandex(@PathVariable long id, @RequestBody YandexCheckDto checkObject) {
+        System.out.println(checkObject.toString());
         var check = taskService.checkYandex(id, checkObject.getYcToken(), checkObject.getYcFolderId(), checkObject.getInputParameters());
         return new CheckDto(check.getId(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(check.getDate()));
     

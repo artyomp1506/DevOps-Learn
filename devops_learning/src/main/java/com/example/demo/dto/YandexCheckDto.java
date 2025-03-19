@@ -10,4 +10,8 @@ public class YandexCheckDto {
     private String ycToken;
     private String ycFolderId;
     private JSONObject inputParameters;
+    @Override
+    public String toString() {
+        return ycToken+' '+ycFolderId+' '+inputParameters.toString();
+    }
 }

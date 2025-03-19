@@ -17,7 +17,7 @@ public class YandexLoadBalancerChecker extends YandexChecker {
 
     public List<Result> checkLoadBalancer(JSONObject checkObject) {
         var results = new ArrayList<Result>();
-        try {
+
             var id = getValueFromInput((String) checkObject.get("id"));
             var loadBalancer = getCloudService().getLoadBalancers(getYcFolderId()).stream().
                     filter(balancer -> balancer.getId().equals(id)).findFirst();
@@ -33,10 +33,7 @@ public class YandexLoadBalancerChecker extends YandexChecker {
                 results.add(new Result(getTask(), "Некорректно настроен обработчик", State.Wrong, getCheck()));
             if (results.isEmpty())
                 results.add(new Result(getTask(), "Балансировщик корректен", State.Correct, getCheck()));
-        } catch (Exception e) {
-            results.add(new Result(getTask(), e.toString(), State.Warning, getCheck()));
-        }
-       return results;
+        return results;
 
 
     }
