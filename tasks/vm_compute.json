@@ -15,7 +15,7 @@
 "metadata":
 [
 {
-"key": "userdata",
+"key": "user-data",
   "value": "nginx",
   "contains": true
 }
