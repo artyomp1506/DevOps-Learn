@@ -17,7 +17,8 @@
 {
 "key": "user-data",
   "value": "nginx",
-  "contains": true
+  "contains": true,
+  "fail_message": "Отсутствует nginx в метаданных"
 }
 
 ]
