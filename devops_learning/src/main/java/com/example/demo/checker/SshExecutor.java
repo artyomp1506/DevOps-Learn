@@ -23,41 +23,53 @@ public class SshExecutor {
     }
 
 
-    public  String getResult(String command) throws Exception {
 
-        Session session = null;
-        ChannelExec channel = null;
+        public String getResult(String command) throws Exception {
+            Session session = null;
+            ChannelExec channel = null;
 
-        try {
-            var jsch = new JSch();
+            try {
+                var jsch = new JSch();
 
+                session = jsch.getSession(username, ip, port);
+                if (this.password != null) {
+                    session.setPassword(this.password);
+                } else {
+                    jsch.addIdentity(keyPath);
+                }
+                session.setConfig("StrictHostKeyChecking", "no");
+                session.connect();
 
-            session = jsch.getSession(username, ip, port);
-            if (this.password!=null)
-                session.setPassword(this.password);
-           else jsch.addIdentity(keyPath);
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
+                channel = (ChannelExec) session.openChannel("exec");
+                channel.setCommand(command);
 
-            channel = (ChannelExec) session.openChannel("exec");
-            channel.setCommand(command);
-            ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
-            channel.setOutputStream(responseStream);
-            channel.connect();
-            session.setTimeout(500);
+                ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
 
-            while (channel.isConnected()) {
-                Thread.currentThread().sleep(500);
-            }
+                channel.setOutputStream(responseStream);
+                channel.setErrStream(errorStream);
 
-            return new String(responseStream.toByteArray());
-        } finally {
-            if (session != null) {
-                session.disconnect();
-            }
-            if (channel != null) {
-                channel.disconnect();
+                channel.connect();
+
+                // Ожидаем завершения выполнения команды
+                while (!channel.isClosed()) {
+                    Thread.sleep(500); // Спим, чтобы не нагружать процессор
+                }
+
+//                // Проверяем поток ошибок
+//                String errorResponse = new String(errorStream.toByteArray());
+//                if (!errorResponse.isEmpty()) {
+//                    throw new Exception("Ошибка выполнения команды: " + errorResponse);
+//                }
+
+                return new String(responseStream.toByteArray());
+            } finally {
+                if (session != null) {
+                    session.disconnect();
+                }
+                if (channel != null) {
+                    channel.disconnect();
+                }
             }
         }
-    }
 }

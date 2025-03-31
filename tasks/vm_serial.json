@@ -15,7 +15,7 @@
 "metadata":
 [
 {
-"id": "[id]"
+"id": "[vm_id]"
 "key": "serial-port-enable",
   "value": 1,
   "fail_message": 

@@ -16,6 +16,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -42,6 +43,10 @@ public class TaskService {
     private VirtualMachineRepository machineRepository;
     private ICloudService cloudService;
     private final long MOODLE_USERS_ID = -1;
+    @Value("${vm_ip:localhost}")
+    private String checkCommandVmIp;
+    @Value("${key_path:null}")
+    private String keyPath;
 
     @Autowired
     public TaskService(ITaskRepository taskRepository, IResultRepository resultRepository, ImageService imageService, TemplateRepository templateRepository, InfoRepository infoRepository, CheckerRepository checkerRepository, IUserRepository userRepository, VirtualMachineRepository machineRepository, ICloudService cloudService) {
@@ -337,7 +342,13 @@ public class TaskService {
                                 checkLoadBalancer((JSONObject) yandexCheck.get("load_balancer") ));
                         
 
-
+                    if (yandexCheck.containsKey("ssh")) {
+                        var executor = new SshExecutor(checkCommandVmIp, "back", null, 22, keyPath);
+                        results.addAll(new Checker(inputParameters, executor, null, null, taskCheck, task).
+                                checkSSH((JSONArray) yandexCheck.get("ssh")));
+                        if (results.isEmpty())
+                            results.add(new Result(task, "Проверки консольными командами пройдены", State.Correct, taskCheck));
+                    }
 
                 }
 

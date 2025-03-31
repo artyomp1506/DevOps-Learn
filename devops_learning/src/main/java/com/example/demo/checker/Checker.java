@@ -39,12 +39,13 @@ public class Checker {
         this.check = check;
         this.task = task;
     }
-    public Checker(JSONObject inputParameters, JSONObject checkers, HashMap<String, String> variables, Check check, Task task) {
+    public Checker(JSONObject inputParameters, SshExecutor sshExecutor, JSONObject checkers, HashMap<String, String> variables, Check check, Task task) {
         this.checkers = checkers;
         this.variables = variables;
         this.check = check;
         this.task = task;
-        //this.inputParameters = in
+        this.inputParameters = inputParameters;
+        this.executor = sshExecutor;
     }
     public List<Result> makeCheck() {
         var results = new ArrayList<Result>();
@@ -60,15 +61,18 @@ public class Checker {
         return results;
     }
     private List<Result> checkSSH() throws Exception {
-        var sshChecker = (JSONObject) checkers.get("ssh_checker");
-        var checks = (JSONArray) sshChecker.get("check");
+        var checker = (JSONObject) checkers.get("ssh_checker");
+        return checkSSH((JSONArray) checker.get("check"));
+    }
+    public List<Result> checkSSH(JSONArray checks) throws Exception {
+
         var results = new ArrayList<Result>();
         for (var check:checks)
         {
 
             var checkInJson = (JSONObject) check;
             var notValidCommand = (String) checkInJson.get("command");
-            var inputCommand = convertToValid(notValidCommand);
+            var inputCommand = getInputValid(convertToValid(notValidCommand));
             if (inputCommand!=null)
             {
                 var timeout = (Long) checkInJson.get("timeout");

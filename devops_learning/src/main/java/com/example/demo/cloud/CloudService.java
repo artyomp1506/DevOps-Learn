@@ -147,9 +147,11 @@ public void stop(String vmId) throws InterruptedException {
     }
     public InstanceOuterClass.Instance getInstance(String instanceId) {
         return instanceService.get(buildGetInstanceRequest(instanceId));
+
     }
     public List<DiskOuterClass.Disk> getDisks(String folderId) {
         return diskService.list(buildListDistRequests(folderId)).getDisksList();
+
     }
     public List<NetworkOuterClass.Network> getNetworks(String ycFolderId) {
         return networkService.list(buildNetworkRequest(ycFolderId)).getNetworksList();

@@ -1,0 +1,35 @@
+{
+    "title": "Clickhouse. Таблица с погодой",
+    "checks": [
+        {
+            "yandex": {
+                "input": [
+                    {
+                        "title": "Url кластера",
+                        "config_name": "host_url"
+                    },
+                    {
+                        "title": "Имя БД",
+                        "config_name": "db"
+                    },
+                    {
+                        "title": "Имя пользователя",
+                        "config_name": "username"
+                    },
+                    {
+                        "title": "Пароль",
+                        "config_name": "password"
+                    }
+                ],
+                "check": {
+                    "ssh": [
+                        {
+                            "command": "clickhouse-client --host [host_url] --secure --user [username] --database [db] --port 9440 --password [password] -q \"SELECT City FROM [db].Weather\" 2>&1",
+                            "contains": "Moscow"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

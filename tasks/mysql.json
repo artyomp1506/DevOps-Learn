@@ -1,0 +1,39 @@
+{
+  "title": "Практическая работа. Подключение к БД и добавление данных",
+  "checks": [
+    {
+      "yandex": {
+        "input": [
+          {
+            "title": "Url кластера",
+            "config_name": "host_url"
+          },
+		  {
+            "title": "Имя БД",
+            "config_name": "db"
+          },
+		   {
+            "title": "Имя пользователя",
+            "config_name": "username"
+          },
+		   {
+            "title": "Пароль",
+            "config_name": "password"
+          },
+        ],
+        "check": {
+          "ssh": [
+            {
+              "command": "mysql --host=[host_url] --port=3306 --ssl-ca=$HOME/.mysql/root.crt --ssl-mode=VERIFY_IDENTITY --user=[username] --password=[password] -e 'show tables' db1 2>/dev/null",
+              "contains": "ratings"
+            },
+			{
+              "command": "mysql --host=[host_url] --port=3306 --ssl-ca=$HOME/.mysql/root.crt --ssl-mode=VERIFY_IDENTITY --user=[username] --password=[password] -e 'select * from employees limit 3' employees 2>/dev/null",
+              "contains": "Georgi"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

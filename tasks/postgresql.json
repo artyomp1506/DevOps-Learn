@@ -1,0 +1,35 @@
+{
+    "title": "Постгря кря-кря-кря",
+    "checks": [
+        {
+            "yandex": {
+                "input": [
+                    {
+                        "title": "Url кластера",
+                        "config_name": "host_url"
+                    },
+                    {
+                        "title": "Имя БД",
+                        "config_name": "db"
+                    },
+                    {
+                        "title": "Имя пользователя",
+                        "config_name": "username"
+                    },
+                    {
+                        "title": "Пароль",
+                        "config_name": "password"
+                    }
+                ],
+                "check": {
+                    "ssh": [
+                        {
+                            "command": "PGPASSWORD=\"[password]\" psql \"host=[host_url] port=6432 sslmode=verify-full dbname=[db] user=[username] target_session_attrs=read-write\" -c \"SELECT * FROM dtm;\" 2>&1",
+                            "contains": "108"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
