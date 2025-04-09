@@ -302,6 +302,8 @@ public class TaskService {
         var template = task.getTemplate();
         var filePath = template.getFilePath();
         JSONObject checkObject = null;
+        inputParameters.put("yc-token", ycToken);
+        inputParameters.put("folder-id", ycFolderId);
         try {
             checkObject = (JSONObject) new JSONParser().parse(new FileReader(filePath));
         } catch (IOException e) {

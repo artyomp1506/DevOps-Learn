@@ -24,7 +24,7 @@
         "check": {
           "ssh": [
             {
-              "command": "mysql --host=[host_url] --port=3306 --ssl-ca=$HOME/.mysql/root.crt --ssl-mode=VERIFY_IDENTITY --user=[username] --password=[password] -e 'show tables' db1 2>/dev/null",
+              "command": "mysql --host=[host_url] --port=3306 --ssl-ca=$HOME/.mysql/root.crt --ssl-mode=VERIFY_IDENTITY --user=[username] --password=[password] -e 'show tables' [db] 2>/dev/null",
               "contains": "ratings"
             },
 			{

@@ -1,0 +1,28 @@
+{
+    "title": "Хранение статических веб-сайтов",
+    "checks": [
+        {
+            "yandex": {
+                "input": [
+                    {
+                        "title": "Url сайта",
+                        "config_name": "host_url"
+                    },
+                   
+                ],
+                "check": {
+                    "ssh": [
+                        {
+                            "command": "echo \"[host_url]\"",
+                            "contains": "website.yandexcloud.net"
+                        },
+						 {
+                            "command": "curl \"[host_url]\" 2>&1",
+                            "contains": "Мы такие скорые на помощь"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

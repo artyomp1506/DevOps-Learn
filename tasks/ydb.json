@@ -1,0 +1,31 @@
+{
+    "title": "YDB",
+    "checks": [
+        {
+            "yandex": {
+                "input": [
+                   
+                    {
+                        "title": "Эндпоинт формата grpc до /database",
+                        "config_name": "endpoint"
+                    },
+                    {
+                        "title": "Путь к базе данных",
+                        "config_name": "path"
+                    }
+                ],
+                "check": {
+                    "ssh": [
+					{
+					"command": "echo [yc-token] > iam-tokens/[folder-id].txt",
+					},
+                        {
+                            "command": "/home/back/ydb/bin/ydb -e [endpoint] -d [path] --iam-token-file iam-tokens/[folder-id].txt yql -s \"SELECT * FROM episodes LIMIT 5;\" 2>&1>[folder-id].txt",
+                            "contains": "The Red Door"
+                        },
+                    ]
+                }
+            }
+        }
+    ]
+}
