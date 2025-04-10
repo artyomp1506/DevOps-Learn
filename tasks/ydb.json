@@ -20,7 +20,7 @@
 					"command": "echo [yc-token] > iam-tokens/[folder-id].txt",
 					},
                         {
-                            "command": "/home/back/ydb/bin/ydb -e [endpoint] -d [path] --iam-token-file iam-tokens/[folder-id].txt yql -s \"SELECT * FROM episodes LIMIT 5;\" 2>&1>[folder-id].txt",
+                            "command": "/home/back/ydb/bin/ydb -e [endpoint] -d [path] --iam-token-file iam-tokens/[folder-id].txt yql -s \"SELECT * FROM episodes LIMIT 5;\" 2>&1",
                             "contains": "The Red Door"
                         },
                     ]
