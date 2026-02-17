@@ -217,4 +217,8 @@ public class TaskController {
         return new CheckDto(check.getId(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(check.getDate()));
     
     }
+    @PostMapping("/task/create-universal")
+    public UniversalTaskDto createUniversalTask(@RequestBody UniversalTaskDto taskRequestDto) {
+    return taskService.createUniversalTask(taskRequestDto);
+    }
 }

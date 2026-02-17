@@ -5,6 +5,9 @@ import com.example.demo.checker.InfoGenerator;
 import com.example.demo.checker.SshExecutor;
 import com.example.demo.cloud.*;
 import com.example.demo.dto.InputParameterDto;
+import com.example.demo.dto.UniversalTaskDto;
+import com.example.demo.entity.AnsiblePlaybookEntity;
+import com.example.demo.entity.ApiEntity;
 import com.example.demo.entity.check_results.Check;
 import com.example.demo.entity.check_results.Result;
 import com.example.demo.entity.check_results.State;
@@ -47,9 +50,10 @@ public class TaskService {
     private String checkCommandVmIp;
     @Value("${key_path:null}")
     private String keyPath;
-
+    private AnsibleRepository ansibleRepository;
+    private ApiTaskRepository apiTaskRepository;
     @Autowired
-    public TaskService(ITaskRepository taskRepository, IResultRepository resultRepository, ImageService imageService, TemplateRepository templateRepository, InfoRepository infoRepository, CheckerRepository checkerRepository, IUserRepository userRepository, VirtualMachineRepository machineRepository, ICloudService cloudService) {
+    public TaskService(ITaskRepository taskRepository, IResultRepository resultRepository, ImageService imageService, TemplateRepository templateRepository, InfoRepository infoRepository, CheckerRepository checkerRepository, IUserRepository userRepository, VirtualMachineRepository machineRepository, ICloudService cloudService, ApiTaskRepository apiTaskRepository, AnsibleRepository ansibleRepository) {
         this.taskRepository = taskRepository;
         this.resultRepository = resultRepository;
         this.imageService = imageService;
@@ -59,6 +63,8 @@ public class TaskService {
         this.userRepository = userRepository;
         this.machineRepository = machineRepository;
         this.cloudService = cloudService;
+        this.apiTaskRepository = apiTaskRepository;
+        this.ansibleRepository = ansibleRepository;
        // init();
     }
     public void init() {
@@ -370,6 +376,23 @@ public class TaskService {
        var current = (JSONObject) checks.get(0);
        return new YandexInputHandler().getInputFields(current);
 
+    }
+    public UniversalTaskDto createUniversalTask(UniversalTaskDto dto) {
+        var apiChecks = new ArrayList<ApiEntity>();
+        var ansibleChecks = new ArrayList<AnsiblePlaybookEntity>();
+        for (var apiCheck:dto.getApiCheckIds())
+        {
+            var apiEntity = apiTaskRepository.findById(apiCheck).get();
+            apiChecks.add(apiEntity);
+        }
+        for (var ansibleCheck:dto.getAnsibleIds())
+        {
+            var ansibleEntity = ansibleRepository.findById(ansibleCheck).get();
+            ansibleChecks.add(ansibleEntity);
+        }
+        var task = new Task(dto.getName(), dto.getDescription(), apiChecks, ansibleChecks, dto.getDeadLine(), dto.getMaxScore());
+        taskRepository.save(task);
+        return dto;
     }
     private String getAdditionalGroupsParameter(JSONArray groups)
     {

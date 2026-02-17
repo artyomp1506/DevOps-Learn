@@ -1,4 +1,9 @@
 package com.example.demo.external_service;
 
-public interface IExternalService {
+import com.example.demo.entity.check_results.IResult;
+
+public interface IExternalService  {
+    void check();
+    IResult getResult();
+
 }

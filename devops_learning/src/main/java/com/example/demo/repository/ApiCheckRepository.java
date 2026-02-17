@@ -1,4 +1,7 @@
 package com.example.demo.repository;
 
-public class ApiCheckRepository {
+import com.example.demo.entity.ApiResponseCheck;
+import org.springframework.data.repository.CrudRepository;
+
+public interface ApiCheckRepository extends CrudRepository<ApiResponseCheck, Long> {
 }

@@ -1,4 +1,7 @@
 package com.example.demo.repository;
 
-public interface ApiParameterRepository {
+import com.example.demo.entity.APIParameterEntity;
+import org.springframework.data.repository.CrudRepository;
+
+public interface ApiParameterRepository extends CrudRepository<APIParameterEntity, Long> {
 }

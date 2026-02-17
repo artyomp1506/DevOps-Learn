@@ -1,4 +1,8 @@
 package com.example.demo.repository;
 
-public interface ITerraformRepository {
+import com.example.demo.entity.TerraformConfiguration;
+import org.springframework.data.repository.CrudRepository;
+
+public interface ITerraformRepository extends CrudRepository<TerraformConfiguration, Long> {
+
 }

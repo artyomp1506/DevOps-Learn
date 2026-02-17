@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Map;
 import java.util.List;
 
@@ -33,6 +34,9 @@ public class ApiExecutor {
     var builder = HttpRequest.newBuilder(URI.create(path));
     for (var header:headers)
         builder.header(header.get("key"), header.get("value"));
+    builder.header("Content-type", "application/json");
+    builder.version(HttpClient.Version.HTTP_1_1);
+    builder.timeout(Duration.ofSeconds(5));
     return builder;
 
     }

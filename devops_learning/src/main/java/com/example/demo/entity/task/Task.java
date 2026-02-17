@@ -1,10 +1,15 @@
 package com.example.demo.entity.task;
 
+import com.example.demo.entity.AnsiblePlaybookEntity;
+import com.example.demo.entity.ApiEntity;
 import com.example.demo.entity.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +26,7 @@ public class Task implements ITask {
 
   @ManyToOne()
   private TaskTemplate template;
-
+private String name;
   private Status status;
     private long mark;
     @OneToMany(cascade = CascadeType.ALL)
@@ -42,11 +47,42 @@ public class Task implements ITask {
     public void setMachines(List<VirtualMachine> machines) {
         this.machines = machines;
     }
+    private String description;
 
+    public Date getDeadline() {
+        return deadline;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public List<ApiEntity> getApiChecks() {
+        return apiChecks;
+    }
+
+    public List<AnsiblePlaybookEntity> getAnsibleChecks() {
+        return ansibleChecks;
+    }
+
+    private Date deadline;
+    @OneToMany()
+    private List<ApiEntity> apiChecks = new ArrayList<>();
+    @OneToMany()
+    private List<AnsiblePlaybookEntity> ansibleChecks = new ArrayList<>();
     @Autowired
     public Task(User user, TaskType type) {
         this.user = user;
         this.type = type;
+    }
+    public Task(String name, String description, List<ApiEntity> apiChecks, List<AnsiblePlaybookEntity> ansibleChecks, Date deadline, int maxScore) {
+        this.name = name;
+        this.description = description;
+        this.ansibleChecks = ansibleChecks;
+        this.apiChecks = apiChecks;
+        this.deadline = deadline;
+        this.mark = maxScore;
+
     }
     public Task(User user, TaskTemplate template)
     {
