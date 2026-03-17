@@ -1,14 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.AnsibleMakeHostsDto;
+import com.example.demo.dto.AnsibleMakeTerraformHostsTDto;
 import com.example.demo.entity.AnsiblePlaybookEntity;
 import com.example.demo.entity.check_results.Check;
-import com.example.demo.entity.check_results.Result;
 import com.example.demo.service.AnsibleCheckService;
 import com.example.demo.service.AnsibleService;
-import com.example.demo.service.AnsibleServiceOutput;
-import com.example.demo.service.TerraformService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,7 +24,12 @@ public class AnsibleController {
     private AnsibleService ansibleService;
     private AnsibleCheckService ansibleCheckService;
     @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE, path = "/ansible/upload")
-    public AnsiblePlaybookEntity upload(@RequestParam String name, @RequestParam String hostFileName, @RequestParam String mainRoleName, @RequestPart("file") MultipartFile multipartFile) {
+    public AnsiblePlaybookEntity upload(@RequestParam String name, @RequestParam String hostFileName, @RequestParam String mainRoleName, @Parameter(
+            description = "Файл для загрузки",
+            required = true,
+            content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    )
+    @RequestParam("file") MultipartFile multipartFile) {
     return this.ansibleService.savePlaybook(name, hostFileName, mainRoleName, multipartFile);
     }
     @GetMapping("/ansible/unzip/{id}")
@@ -38,9 +44,13 @@ public class AnsibleController {
             throw new RuntimeException(e);
         }
     }
-    @PostMapping("/ansible/make-hosts")
-    public AnsiblePlaybookEntity makeHostsFromTerraform(@RequestBody AnsibleMakeHostsDto dto) throws Exception {
+    @PostMapping("/ansible/make-terraform-hosts")
+    public AnsiblePlaybookEntity makeHostsFromTerraform(@RequestBody AnsibleMakeTerraformHostsTDto dto) throws Exception {
         return this.ansibleService.makeHosts(dto.getAnsibleId(), dto.getTerraformId(), dto.getTaskId(), dto.getHostKeys());
+    }
+    @PostMapping("/ansible/make-hosts")
+    public AnsiblePlaybookEntity makeHosts(@RequestBody AnsibleMakeHostsDto dto) throws IOException {
+        return this.ansibleService.makeHosts(dto.getTaskId(), dto.getAnsibleId(), dto.getHosts());
     }
     @PostMapping("/ansible/check")
     public Check check(long playbookId, long taskId) throws IOException, InterruptedException {

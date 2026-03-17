@@ -2,14 +2,13 @@ package com.example.demo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.List;
+import org.json.simple.JSONArray;
 
 @Getter
 @AllArgsConstructor
-public class AnsibleMakeHostsDto {
+public class AnsibleMakeTerraformHostsTDto {
     private long ansibleId;
+    private long terraformId;
     private long taskId;
-    private List<String> hosts;
-
+    private JSONArray hostKeys;
 }

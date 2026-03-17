@@ -1,0 +1,46 @@
+---
+- name: Минимальная проверка PostgreSQL с остановкой
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Проверка установки PostgreSQL
+      command: psql --version
+      register: pg_check
+      changed_when: false
+      failed_when: false
+      
+    - name: Остановка если PostgreSQL не установлен
+      fail:
+        msg: "КРИТИЧЕСКАЯ ОШИБКА: PostgreSQL не установлен на хосте {{ inventory_hostname }}!"
+      when: pg_check.rc != 0
+      
+    - name: Проверка сервиса PostgreSQL
+      systemd:
+        name: "postgresql"
+        state: started
+      register: service_check
+      failed_when: false
+      
+    - name: Остановка если сервис не запущен
+      fail:
+        msg: "КРИТИЧЕСКАЯ ОШИБКА: Сервис PostgreSQL не запущен на хосте {{ inventory_hostname }}!"
+      when: service_check is failed
+      
+    - name: Проверка порта PostgreSQL
+      wait_for:
+        port: 5432
+        timeout: 3
+      register: port_check
+      failed_when: false
+      
+    - name: Остановка если порт недоступен
+      fail:
+        msg: "КРИТИЧЕСКАЯ ОШИБКА: Порт PostgreSQL 5432 недоступен на хосте {{ inventory_hostname }}!"
+      when: port_check is failed
+      
+    - name: Успешное завершение
+      debug:
+        msg: |
+          ✅ PostgreSQL успешно установлен и работает!
+          Версия: {{ pg_check.stdout }}

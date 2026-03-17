@@ -1,13 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.AnsiblePlaybookEntity;
-import com.example.demo.entity.TerraformConfiguration;
-import com.example.demo.entity.check_results.Check;
-import com.example.demo.entity.check_results.Result;
-import com.example.demo.entity.check_results.State;
 import com.example.demo.repository.AnsibleRepository;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.NotImplementedException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
@@ -20,7 +15,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @Service
@@ -33,8 +27,10 @@ public class AnsibleService {
         var ansConfig = new AnsiblePlaybookEntity();
         ansibleRepository.save(ansConfig);
         if (!Files.exists(Paths.get(String.format("%s/playbooks/%d/", System.getProperty("user.dir"), ansConfig.getId()))))
-            new File(String.format("%s/playbooks/%d/", System.getProperty("user.dir"), ansConfig.getId())).mkdirs();
-        Path destinationFile = Paths.get(String.format("%s/playbooks/%d/%s", System.getProperty("user.dir"), ansConfig.getId(), name));
+            new File(String.format("%s/playbooks/%d/", System.getProperty("user.dir"), ansConfig.getId()))
+                    .mkdirs();
+        Path destinationFile = Paths.get(String.format("%s/playbooks/%d/%s",
+                System.getProperty("user.dir"), ansConfig.getId(), mainRoleName));
         try (InputStream inputStream = file.getInputStream()) {
             Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             ansConfig.setName(name);
@@ -96,26 +92,14 @@ public class AnsibleService {
             var mainRolePath = configuration.getArchivePath();
             String[] ansibleCommandParts = {
                     "ansible-playbook",
-                    "-i",  configuration.getHostFileName(),
+                    "-i", configuration.getHostFileName(),
                     "/mnt/" + configuration.getMainRoleName()
             };
             String currentDir = System.getProperty("user.dir");
             String keyPathOnHost = currentDir + "/students-run/" + taskId + "/id_rsa";
             File keyFile = new File(keyPathOnHost);
 
-            if (keyFile.exists()) {
-                // Для Windows и Unix-совместимости
-                if (!System.getProperty("os.name").toLowerCase().contains("win")) {
-                    // Unix/Linux/Mac
-                    ProcessBuilder chmod = new ProcessBuilder("chmod", "600", keyPathOnHost);
-                    chmod.start().waitFor();
-                } else {
-                    // Windows - устанавливаем минимальные права через Java
-                    keyFile.setReadable(true, true);
-                    keyFile.setWritable(true, true);
-                    keyFile.setExecutable(false);
-                }
-            }
+
             String fullCommand = String.format(
                     "chmod 600 /students-run/%d/id_rsa && ansible-playbook -i /students-run/%d/hosts /mnt/%s", taskId, taskId,
                     configuration.getMainRoleName()
@@ -157,18 +141,46 @@ public class AnsibleService {
     }
 
 
-    public AnsiblePlaybookEntity makeHosts(long ansibleId, long terraformId, long taskId,  JSONArray hostsKeys) throws Exception {
-        var ansibleEntity = ansibleRepository.findById(ansibleId).get();
+    public AnsiblePlaybookEntity makeHosts(long ansibleId, long terraformId, long taskId, JSONArray hostsKeys) throws Exception {
+        var hosts = new ArrayList<String>();
         var terraformResult = terraformService.getOutput(terraformId);
+        for (var key : hostsKeys) {
+            var outputObject = (JSONObject) terraformResult.get(key);
+            hosts.add((String) outputObject.get("value"));
+        }
+
+        return saveHosts(taskId, ansibleId, hosts);
+
+    }
+
+    public AnsiblePlaybookEntity makeHosts(long taskId, long ansibleId, List<String> addresses) throws IOException {
+        return saveHosts(taskId, ansibleId, addresses);
+
+    }
+
+    private AnsiblePlaybookEntity saveHosts(long taskId, long ansibleId, List<String> hosts) throws IOException {
+        var ansibleEntity = ansibleRepository.findById(ansibleId).get();
+        var path = makeHostFile(taskId, hosts);
+        ansibleEntity.setHostFileName(path);
+        ansibleRepository.save(ansibleEntity);
+        return ansibleEntity;
+    }
+
+    public List<AnsiblePlaybookEntity> getAll() {
+        var results = new ArrayList<AnsiblePlaybookEntity>();
+        for (var result : ansibleRepository.findAll())
+            results.add(result);
+        return results;
+    }
+    private static String makeHostFile(long taskId, List<String> hosts) throws IOException {
         var hostsBuilder = new StringBuilder();
         hostsBuilder.append("[task_servers]\n");
-        for (int i=0; i<hostsKeys.size(); i++) {
-            var outputObject = (JSONObject) terraformResult.get(hostsKeys.get(i));
-            var value = outputObject.get("value");
+        for (int i = 0; i < hosts.size(); i++) {
+
             hostsBuilder.append(
                     String.format(
                             "server%d ansible_host=%s ansible_user=ubuntu ansible_ssh_private_key_file=./id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'\n",
-                            i, value));
+                            i, hosts.get(i)));
         }
         var hostsString = hostsBuilder.toString();
         var path = String.format("./students-run/%d/hosts", taskId);
@@ -180,17 +192,7 @@ public class AnsibleService {
         var writer = new FileWriter(path);
         writer.write(hostsString);
         writer.close();
-        ansibleEntity.setHostFileName(String.format("/students-run/%d/hosts", taskId));
-        ansibleRepository.save(ansibleEntity);
-        return ansibleEntity;
-
-    }
-
-    public List<AnsiblePlaybookEntity> getAll() {
-        var results = new ArrayList<AnsiblePlaybookEntity>();
-       for (var result: ansibleRepository.findAll())
-           results.add(result);
-       return results;
+        return path;
     }
 }
 

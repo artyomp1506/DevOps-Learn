@@ -380,15 +380,19 @@ public class TaskService {
     public UniversalTaskDto createUniversalTask(UniversalTaskDto dto) {
         var apiChecks = new ArrayList<ApiEntity>();
         var ansibleChecks = new ArrayList<AnsiblePlaybookEntity>();
-        for (var apiCheck:dto.getApiCheckIds())
-        {
-            var apiEntity = apiTaskRepository.findById(apiCheck).get();
-            apiChecks.add(apiEntity);
+        var apiCheckIds = dto.getApiCheckIds();
+        var ansibleIds = dto.getAnsibleIds();
+        if (!apiCheckIds.isEmpty()) {
+            for (var apiCheck : apiCheckIds) {
+                var apiEntity = apiTaskRepository.findById(apiCheck).get();
+                apiChecks.add(apiEntity);
+            }
         }
-        for (var ansibleCheck:dto.getAnsibleIds())
-        {
-            var ansibleEntity = ansibleRepository.findById(ansibleCheck).get();
-            ansibleChecks.add(ansibleEntity);
+        if (!ansibleIds.isEmpty()) {
+            for (var ansibleId : ansibleIds) {
+                var ansibleEntity = ansibleRepository.findById(ansibleId).get();
+                ansibleChecks.add(ansibleEntity);
+            }
         }
         var task = new Task(dto.getName(), dto.getDescription(), apiChecks, ansibleChecks, dto.getDeadLine(), dto.getMaxScore());
         taskRepository.save(task);
