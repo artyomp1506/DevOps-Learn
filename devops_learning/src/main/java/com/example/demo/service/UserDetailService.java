@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 @Service
@@ -31,14 +32,10 @@ public class UserDetailService implements UserDetailsService {
     }
     public UserDetails loadUserById(Long id)
     {
-        var user = userRepository.findById(id);
-        if (user.isPresent())
-        {
-            var current_user = user.get();
-            return new org.springframework.security.core.userdetails.User
-                    (current_user.getUsername(), current_user.getPassword(), mapRolesToAuthorities(Set.of(current_user.getRole())));
-        }
-        throw new UsernameNotFoundException("Пользователь не найден");
+        var current_user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
+        return new org.springframework.security.core.userdetails.User
+                (current_user.getUsername(), current_user.getPassword(), mapRolesToAuthorities(Set.of(current_user.getRole())));
     }
     private List<? extends GrantedAuthority> mapRolesToAuthorities(Set<Role> roles)
     {

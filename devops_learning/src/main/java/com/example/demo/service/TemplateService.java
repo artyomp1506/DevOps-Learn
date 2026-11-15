@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import org.json.simple.parser.*;
 @Service
@@ -65,7 +66,8 @@ public class TemplateService {
     }
     public TaskTemplate getTemplate(long id)
     {
-        return templateRepository.findById(id).get();
+        return templateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + id));
     }
     public void addTemplate(String templateName, String templateConfig) throws RuntimeException, IOException {
         var path = "./tasks/"+templateName;
@@ -77,7 +79,8 @@ public class TemplateService {
     }
     public void deleteTemplate(long id)
     {
-        var template = templateRepository.findById(id).orElseThrow();
+        var template = templateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + id));
         var path = template.getFilePath();
         var config = new File(path);
         if (config.exists())
@@ -85,7 +88,8 @@ public class TemplateService {
         templateRepository.delete(template);
     }
     public JSONObject readTemplate(long id) throws RuntimeException {
-        var template = templateRepository.findById(id).get();
+        var template = templateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + id));
         var path = template.getFilePath();
         if (Files.exists(Paths.get(path)))
         {
@@ -96,12 +100,13 @@ public class TemplateService {
                 throw new RuntimeException(e);
             }
         }
-        throw new RuntimeException("Файла задачи не существует");
+        throw new NoSuchElementException("Template file does not exist: " + path);
     }
 
 
     public void editTemplate(long id, String configBody) throws RuntimeException {
-        var template = templateRepository.findById(id).get();
+        var template = templateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + id));
         var filePath = template.getFilePath();
         var file = new File(filePath);
         if (file.exists() && file.isFile())

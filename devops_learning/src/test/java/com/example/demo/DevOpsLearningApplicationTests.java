@@ -39,10 +39,4 @@ class DevOpsLearningApplicationTests {
 		}
 
 	}
-	@Test
-	void executeSSHCorrectly()
-	{
-		var execut
-	}
-
 }

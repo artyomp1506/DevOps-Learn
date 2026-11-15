@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -52,79 +53,74 @@ public class TerraformService {
     }
 
     public TerraformConfiguration apply(long id) {
-        var tfConfig = terraformRepository.findById(id);
-        if (tfConfig.isPresent()) {
+        var tfConfig = terraformRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Terraform configuration not found with id: " + id));
 
-            try {
-
-                var processApplyBuilder = new ProcessBuilder("terraform", "apply", "-auto-approve");
-                processApplyBuilder.directory(Paths.get(tfConfig.get().getFilePath()).getParent().toFile());
-                var applyProcess = processApplyBuilder.start();
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(applyProcess.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        System.out.println("[TERRAFORM] " + line);
-                    }
-                    applyProcess.waitFor();
-                    return tfConfig.get();
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        try {
+            var processApplyBuilder = new ProcessBuilder("terraform", "apply", "-auto-approve");
+            processApplyBuilder.directory(Paths.get(tfConfig.getFilePath()).getParent().toFile());
+            var applyProcess = processApplyBuilder.start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(applyProcess.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("[TERRAFORM] " + line);
                 }
+                applyProcess.waitFor();
+                return tfConfig;
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     public TerraformConfiguration init(long id) {
-        var tfConfig = terraformRepository.findById(id);
-        if (tfConfig.isPresent()) {
-            ProcessBuilder processBuilder = new ProcessBuilder("terraform", "init");
-            try {
+        var tfConfig = terraformRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Terraform configuration not found with id: " + id));
 
-                processBuilder.directory(Paths.get(tfConfig.get().getFilePath()).getParent().toFile());
-                System.out.println(processBuilder.directory());
-                var initProcess = processBuilder.start();
-                return tfConfig.get();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        ProcessBuilder processBuilder = new ProcessBuilder("terraform", "init");
+        try {
+            processBuilder.directory(Paths.get(tfConfig.getFilePath()).getParent().toFile());
+            System.out.println(processBuilder.directory());
+            var initProcess = processBuilder.start();
+            initProcess.waitFor();
+            return tfConfig;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
     public JSONObject getOutput(long id) throws Exception {
         var output = new StringBuilder();
-        var tfConfig = terraformRepository.findById(id);
-        if (tfConfig.isPresent()) {
-            var workingPath = Paths.get(tfConfig.get().getFilePath()).getParent().toFile();
-            var outputProcessBuilder = new ProcessBuilder("terraform", "output", "-json");
-            outputProcessBuilder.directory(workingPath);
-            try {
-                var outputProcess = outputProcessBuilder.start();
-                BufferedReader br = new BufferedReader(new InputStreamReader(outputProcess.getInputStream()));
-                while (true) {
-                    String line = br.readLine();
-                    if (line==null)
-                        break;
-                    output.append(line);
-                    output.append("\n");
-                }
-                var result = output.toString();
-                return (JSONObject) new JSONParser().parse(result);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+        var tfConfig = terraformRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Terraform configuration not found with id: " + id));
 
+        var workingPath = Paths.get(tfConfig.getFilePath()).getParent().toFile();
+        var outputProcessBuilder = new ProcessBuilder("terraform", "output", "-json");
+        outputProcessBuilder.directory(workingPath);
+        try {
+            var outputProcess = outputProcessBuilder.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(outputProcess.getInputStream()));
+            while (true) {
+                String line = br.readLine();
+                if (line == null)
+                    break;
+                output.append(line);
+                output.append("\n");
+            }
+            var result = output.toString();
+            return (JSONObject) new JSONParser().parse(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
-        throw new Exception("Unable to parse");
     }
 }
 

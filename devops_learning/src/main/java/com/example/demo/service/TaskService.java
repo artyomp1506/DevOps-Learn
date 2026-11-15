@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,13 +46,21 @@ public class TaskService {
     private IUserRepository userRepository;
     private VirtualMachineRepository machineRepository;
     private ICloudService cloudService;
-    private final long MOODLE_USERS_ID = -1;
-    @Value("${vm_ip:localhost}")
-    private String checkCommandVmIp;
-    @Value("${key_path:null}")
-    private String keyPath;
     private AnsibleRepository ansibleRepository;
     private ApiTaskRepository apiTaskRepository;
+
+    // SSH Configuration
+    @Value("${ssh.key.path:null}")
+    private String sshKeyPath;
+
+    @Value("${ssh.username:checker}")
+    private String sshUsername;
+
+    @Value("${ssh.port:22}")
+    private int sshPort;
+
+    @Value("${vm.check.ip:localhost}")
+    private String vmCheckIp;
     @Autowired
     public TaskService(ITaskRepository taskRepository, IResultRepository resultRepository, ImageService imageService, TemplateRepository templateRepository, InfoRepository infoRepository, CheckerRepository checkerRepository, IUserRepository userRepository, VirtualMachineRepository machineRepository, ICloudService cloudService, ApiTaskRepository apiTaskRepository, AnsibleRepository ansibleRepository) {
         this.taskRepository = taskRepository;
@@ -65,7 +74,6 @@ public class TaskService {
         this.cloudService = cloudService;
         this.apiTaskRepository = apiTaskRepository;
         this.ansibleRepository = ansibleRepository;
-       // init();
     }
     public void init() {
         var tasks = taskRepository.findAll();
@@ -89,20 +97,30 @@ public class TaskService {
     }
     public Task save(long userId, long templateId)
     {
-        var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+        var template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + templateId));
+        var task = new Task(user, template);
         task.setStatus(Status.NoVm);
         taskRepository.save(task);
         return task;
     }
     public Task saveMoodle(long templateId)
     {
-        var task = new Task(templateRepository.findById(templateId).get());
+        var template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + templateId));
+        var task = new Task(template);
         task.setStatus(Status.NoVm);
         taskRepository.save(task);
         return task;
     }
     public Task saveLocal(long userId, long templateId, String[] ipAddresses) {
-        var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+        var template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + templateId));
+        var task = new Task(user, template);
         taskRepository.save(task);
         var machines = new ArrayList<VirtualMachine>();
         for (var ipAddress:ipAddresses)
@@ -112,7 +130,11 @@ public class TaskService {
         return  task;
     }
     public Task saveCloud(long userId, long templateId) {
-        var task = new Task(userRepository.findById(userId).get(), templateRepository.findById(templateId).get());
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+        var template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + templateId));
+        var task = new Task(user, template);
         taskRepository.save(task);
         return task;
     }
@@ -120,12 +142,14 @@ public class TaskService {
         return taskRepository.findAllByUserId(userId);
     }
     public Task getById(long taskId) {
-        return taskRepository.findById(taskId).orElseThrow();
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
     }
 
     public void runTask(long id, String username, String sshKey) {
         new Thread(()->{
-            var task = taskRepository.findById(id).get();
+            var task = taskRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + id));
             var template = task.getTemplate();
             var filePath = template.getFilePath();
             try {
@@ -181,8 +205,8 @@ public class TaskService {
     }
     public void startVm(long taskId)
     {
-
-        var task = taskRepository.findById(taskId).get();
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
         new Thread(()->{
             try {
                 for (var machine:task.getMachines())
@@ -201,7 +225,8 @@ public class TaskService {
     }
     public void stopVm(long taskId)
     {
-        var task = taskRepository.findById(taskId).get();
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
         new Thread(()->{
             try {
                 for (var machine:task.getMachines())
@@ -220,7 +245,8 @@ public class TaskService {
     public void deleteVM(long taskId) throws InterruptedException {
         new Thread(()-> {
             try {
-                var task = taskRepository.findById(taskId).get();
+                var task = taskRepository.findById(taskId)
+                        .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
 
                 for (var machine:task.getMachines())
                 {
@@ -238,7 +264,8 @@ public class TaskService {
         return resultRepository.getResultByTaskId(taskId);
     }
     public List<TaskInfo> getInfo(long id, String username) throws IOException, ParseException {
-        var task = taskRepository.findById(id).get();
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + id));
         var taskId = task.getId();
         var info = task.getInfoList();
         var template = task.getTemplate();
@@ -260,7 +287,8 @@ public class TaskService {
         var check = new Check(taskId);
         checkerRepository.save(check);
         var checkId = check.getId();
-        var task = taskRepository.findById(taskId).get();
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
         var templateInfo = task.getTemplate();
         var checkFilePath = templateInfo.getFilePath();
         var variables = new HashMap<String, String>();
@@ -289,7 +317,8 @@ public class TaskService {
                         variables.put(String.format("int_ip%d", i), machineInternalIp);
                     }
                     var sshPassword = variables.getOrDefault("ssh_password", null);
-                    var sshExecutor = new SshExecutor(variables.get(String.format("ip%d", vmIndex)), "checker", sshPassword, 22, "C:\\Users\\xeo\\Desktop\\id_rsa");
+                    var targetIp = variables.get(String.format("ip%d", vmIndex));
+                    var sshExecutor = new SshExecutor(targetIp, sshUsername, sshPassword, sshPort, sshKeyPath);
                     var checker = new Checker(sshExecutor, chkeobj, variables, check, task);
                     var results = checker.makeCheck();
                     resultRepository.saveAll(results);
@@ -302,7 +331,8 @@ public class TaskService {
         return check;
     }
     public Check checkYandex(long taskId, String ycToken, String ycFolderId,  JSONObject inputParameters) {
-        var task = taskRepository.findById(taskId).get();
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + taskId));
         var taskCheck = new Check(taskId);
         checkerRepository.save(taskCheck);
         var template = task.getTemplate();
@@ -351,7 +381,7 @@ public class TaskService {
                         
 
                     if (yandexCheck.containsKey("ssh")) {
-                        var executor = new SshExecutor(checkCommandVmIp, "back", null, 22, keyPath);
+                        var executor = new SshExecutor(vmCheckIp, "back", null, sshPort, sshKeyPath);
                         results.addAll(new Checker(inputParameters, executor, null, null, taskCheck, task).
                                 checkSSH((JSONArray) yandexCheck.get("ssh")));
                         if (results.isEmpty())
@@ -369,7 +399,8 @@ public class TaskService {
         return taskCheck;
     }
     public List<InputParameterDto> getInputParameters(long id) throws IOException, ParseException {
-        var template = templateRepository.findById(id).get();
+        var template = templateRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Template not found with id: " + id));
         var path = template.getFilePath();
         var taskObject = (JSONObject) new JSONParser().parse(new FileReader(path));
        var checks = (JSONArray) taskObject.get("checks");
@@ -384,13 +415,15 @@ public class TaskService {
         var ansibleIds = dto.getAnsibleIds();
         if (!apiCheckIds.isEmpty()) {
             for (var apiCheck : apiCheckIds) {
-                var apiEntity = apiTaskRepository.findById(apiCheck).get();
+                var apiEntity = apiTaskRepository.findById(apiCheck)
+                        .orElseThrow(() -> new NoSuchElementException("Api check not found with id: " + apiCheck));
                 apiChecks.add(apiEntity);
             }
         }
         if (!ansibleIds.isEmpty()) {
             for (var ansibleId : ansibleIds) {
-                var ansibleEntity = ansibleRepository.findById(ansibleId).get();
+                var ansibleEntity = ansibleRepository.findById(ansibleId)
+                        .orElseThrow(() -> new NoSuchElementException("Ansible check not found with id: " + ansibleId));
                 ansibleChecks.add(ansibleEntity);
             }
         }

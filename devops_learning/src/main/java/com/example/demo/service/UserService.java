@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,8 @@ public class UserService {
         return userRepository.findByUsername(principal.getName());
     }
     public User getById(long userId) {
-        return  userRepository.findById(userId).get();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
     }
 
 

@@ -9,7 +9,8 @@ import org.json.simple.JSONObject;
 import yandex.cloud.api.compute.v1.*;
 
 import java.util.ArrayList;
-import  java.util.List;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class YandexComputeChecker extends YandexChecker {
 
@@ -47,7 +48,10 @@ public class YandexComputeChecker extends YandexChecker {
     }
     private Result checkDiskValue(InstanceOuterClass.Instance instance, JSONObject diskValue) {
     var diskId = instance.getBootDisk().getDiskId();
-    var disk = getCloudService().getDisks(this.getYcFolderId()).stream().filter(currentDisk->currentDisk.getId()==diskId).findFirst().get();
+    var disk = getCloudService().getDisks(this.getYcFolderId()).stream()
+            .filter(currentDisk -> currentDisk.getId().equals(diskId))
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("Диск не найден с id: " + diskId));
     var size = (long) (disk.getSize()/Math.pow(2, 30));
     var expectedSize = (long) diskValue.get("size");
     if (size!=expectedSize)

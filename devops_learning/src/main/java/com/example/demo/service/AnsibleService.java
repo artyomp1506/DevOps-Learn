@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.zip.ZipInputStream;
 
 @Service
@@ -45,7 +46,8 @@ public class AnsibleService {
     }
 
     public AnsiblePlaybookEntity unzip(long id) {
-        var ansEntity = this.ansibleRepository.findById(id).get();
+        var ansEntity = this.ansibleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Ansible playbook not found with id: " + id));
         File destDir = new File(String.format("./playbooks/%d", ansEntity.getId()));
 
         byte[] buffer = new byte[1024];
@@ -86,58 +88,43 @@ public class AnsibleService {
     }
 
     public AnsibleServiceOutput runPlaybook(long id, long taskId) throws IOException, InterruptedException {
-        var ansEntity = this.ansibleRepository.findById(id);
-        if (ansEntity.isPresent()) {
-            var configuration = ansEntity.get();
-            var mainRolePath = configuration.getArchivePath();
-            String[] ansibleCommandParts = {
-                    "ansible-playbook",
-                    "-i", configuration.getHostFileName(),
-                    "/mnt/" + configuration.getMainRoleName()
-            };
-            String currentDir = System.getProperty("user.dir");
-            String keyPathOnHost = currentDir + "/students-run/" + taskId + "/id_rsa";
-            File keyFile = new File(keyPathOnHost);
+        var configuration = this.ansibleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Ansible playbook not found with id: " + id));
 
-
-            String fullCommand = String.format(
-                    "chmod 600 /students-run/%d/id_rsa && ansible-playbook -i /students-run/%d/hosts /mnt/%s", taskId, taskId,
-                    configuration.getMainRoleName()
-            );
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "docker", "run",
-                    "-v", String.format("./playbooks/%d/:/mnt", configuration.getId()),
-                    "-v", String.format("./students-run/%d/:/students-run/%d", taskId, taskId),
-                    "my-ansible",
-                    "sh", "-c", fullCommand
-            );
-            processBuilder.redirectErrorStream(true);
-
-//             for (String part : ansibleCommandParts) {
-//                processBuilder.command().add(part);
-//            }
-            StringBuilder outputBuilder = new StringBuilder();
-            var applyProcess = processBuilder.start();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(applyProcess.getInputStream()))) {
-                String line = reader.readLine();
-                while (true) {
-                    if (line == null)
-                        break;
-                    System.out.println(line);
-                    line = reader.readLine();
-                    outputBuilder.append(line);
-                }
-                applyProcess.waitFor();
-                return new AnsibleServiceOutput(configuration, outputBuilder.toString());
-
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-
+        // Убедимся, что директория students-run/{taskId} существует
+        Path studentsRunDir = Paths.get(String.format("./students-run/%d", taskId));
+        if (!Files.exists(studentsRunDir)) {
+            Files.createDirectories(studentsRunDir);
         }
-        return null;
+
+        String fullCommand = String.format(
+                "ansible-playbook -i /students-run/%d/hosts /mnt/%s", taskId,
+                configuration.getMainRoleName()
+        );
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "docker", "run",
+                "-v", String.format("./playbooks/%d/:/mnt", configuration.getId()),
+                "-v", String.format("./students-run/%d:/students-run/%d", taskId, taskId),
+                "my-ansible",
+                "sh", "-c", fullCommand
+        );
+        processBuilder.redirectErrorStream(true);
+
+        StringBuilder outputBuilder = new StringBuilder();
+        var applyProcess = processBuilder.start();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(applyProcess.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                outputBuilder.append(line).append("\n");
+            }
+        }
+        int exitCode = applyProcess.waitFor();
+        if (exitCode != 0) {
+            throw new RuntimeException("Ansible playbook exited with code " + exitCode + "\n" + outputBuilder.toString());
+        }
+        return new AnsibleServiceOutput(configuration, outputBuilder.toString());
     }
 
 
@@ -159,7 +146,8 @@ public class AnsibleService {
     }
 
     private AnsiblePlaybookEntity saveHosts(long taskId, long ansibleId, List<String> hosts) throws IOException {
-        var ansibleEntity = ansibleRepository.findById(ansibleId).get();
+        var ansibleEntity = ansibleRepository.findById(ansibleId)
+                .orElseThrow(() -> new NoSuchElementException("Ansible playbook not found with id: " + ansibleId));
         var path = makeHostFile(taskId, hosts);
         ansibleEntity.setHostFileName(path);
         ansibleRepository.save(ansibleEntity);

@@ -2,3 +2,9 @@
 playbooks/
 students-run/
 manifests/
+
+# Sensitive configuration
+devops_learning/src/main/resources/application-local.properties
+devops_learning/src/main/resources/application-secrets.properties
+*.key
+*.pem

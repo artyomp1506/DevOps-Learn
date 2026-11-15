@@ -35,6 +35,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class CloudService implements ICloudService {
     private  final String ycFolderId;
@@ -97,8 +98,9 @@ public void stop(String vmId) throws InterruptedException {
     public void delete(String vmId) throws InterruptedException {
         var instance = instanceService.list(buildListInstancesRequest(ycFolderId)).getInstancesList()
                 .stream()
-                .filter(currentInstance->currentInstance.getId().equals(vmId))
-                .findFirst().get();
+                .filter(currentInstance -> currentInstance.getId().equals(vmId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Instance not found with id: " + vmId));
         var diskId = instance.getBootDisk().getDiskId();
         Operation deleteVmOperation = instanceService.delete(buildDeleteInstanceRequest(vmId));
         OperationUtils.wait(operationService, deleteVmOperation, Duration.ofMinutes(2));
@@ -208,9 +210,15 @@ public void stop(String vmId) throws InterruptedException {
         return InstanceServiceOuterClass.StartInstanceRequest.newBuilder().setInstanceId(vmId).build();
     }
     private CloudResult getCloudResult(String id) {
-        var  ready_instance = instanceService.list(buildListInstancesRequest(ycFolderId)).getInstancesList()
-                .stream().filter(instance -> instance.getId().equals(id)).findFirst();
-        var network_interface = ready_instance.get().getNetworkInterfacesList().stream().findFirst().get();
+        var ready_instance = instanceService.list(buildListInstancesRequest(ycFolderId)).getInstancesList()
+                .stream()
+                .filter(instance -> instance.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Instance not found with id: " + id));
+        var network_interface = ready_instance.getNetworkInterfacesList()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Network interface not found for instance: " + id));
         var internal_ip = network_interface.getPrimaryV4Address().getAddress();
         var external_ip = network_interface.getPrimaryV4Address().getOneToOneNat().getAddress();
         return new CloudResult(external_ip, internal_ip, id);

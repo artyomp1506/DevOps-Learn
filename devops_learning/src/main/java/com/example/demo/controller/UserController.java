@@ -20,10 +20,11 @@ import java.security.Principal;
 @AllArgsConstructor
 public class UserController {
     private UserService userService;
-   @Operation(description = "Получить информацию о пользователе")
+    @Operation(description = "Получить информацию о пользователе")
     @GetMapping("/me")
     public UserResponseDto getMe(Principal principal)
     {
-        return new UserResponseDto(principal.getName());
+        var user = userService.getUserFromPrincipal(principal);
+        return new UserResponseDto(user.getId(), user.getUsername(), user.getRole().toString(), user.getCreatedAt());
     }
 }
